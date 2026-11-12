@@ -41,7 +41,9 @@
   .friend span{display:block;text-align:center;font-size:10px;color:rgba(233,235,245,.6);margin-top:6px;width:44px}
   svg.tether{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
 
-  .verdict{position:absolute;top:18%;left:0;right:0;text-align:center;font-size:12px;letter-spacing:3px;text-transform:uppercase;opacity:0;pointer-events:none;z-index:4}
+  .globe.pulse .shade{animation:pulse .9s ease-out}
+  @keyframes pulse{0%{box-shadow:0 0 0 1px rgba(190,205,255,.28),0 0 0 0 rgba(207,224,255,.7)}100%{box-shadow:0 0 0 1px rgba(190,205,255,.28),0 0 0 26px rgba(207,224,255,0)}}
+  .verdict{position:absolute;top:11%;left:0;right:0;text-align:center;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:0 24px;opacity:0;pointer-events:none;z-index:4}
 
   .hint{position:absolute;bottom:26px;left:0;right:0;text-align:center;font-size:11px;color:rgba(233,235,245,.35);letter-spacing:.3px;pointer-events:none}
 
@@ -154,7 +156,7 @@ function slots(p){
 const ANON=`<div class="globe" style="--s:44px"><div class="photo" style="background:radial-gradient(circle at 40% 35%,#363b56,#12142a)"><svg viewBox="0 0 44 44" width="44" height="44"><circle cx="22" cy="17" r="7" fill="rgba(210,218,245,.55)"/><path d="M8 40c1.5-8 7.5-12 14-12s12.5 4 14 12" fill="rgba(210,218,245,.55)"/></svg></div><div class="shade"></div></div>`;
 
 /* ---------- frame loop: hover at rest; swipes travel a shallow parabola, lowest at center ---------- */
-let t0=performance.now(), tOp=1;
+let t0=performance.now(), tOp=1, note="", noteUntil=0;
 function frame(now){
   const t=(now-t0)/1000, W2=stage.clientWidth, H2=stage.clientHeight;
   const lift=55*(offX/W2)**2;                     // rises toward the edges, bottoms out on screen
@@ -190,7 +192,8 @@ function frame(now){
   }
   // verdict text
   const v=$("#verdict");
-  if(phase==="drag"||phase==="fling"){const d=offX;v.textContent=d>0?"Interested":"Pass";v.style.color=d>0?"#cfe0ff":"rgba(233,235,245,.6)";v.style.opacity=Math.min(1,Math.abs(d)/120)*op}
+  if(now<noteUntil){v.textContent=note;v.style.color="#cfe0ff";v.style.opacity=1}
+  else if(phase==="drag"||phase==="fling"){const d=offX;v.textContent=d>0?"Interested":"Pass";v.style.color=d>0?"#cfe0ff":"rgba(233,235,245,.6)";v.style.opacity=Math.min(1,Math.abs(d)/120)*op}
   else v.style.opacity=0;
   if(anim)anim(now);
   requestAnimationFrame(frame);
@@ -199,10 +202,26 @@ requestAnimationFrame(frame);
 
 /* ---------- gestures ---------- */
 let sx=0, dx=0;
-stage.addEventListener("pointerdown",e=>{if(phase!=="idle")return;phase="drag";sx=e.clientX;dx=0;stage.setPointerCapture(e.pointerId)});
+let downOn=null, lastTap={el:null,t:0};
+stage.addEventListener("pointerdown",e=>{if(phase!=="idle")return;phase="drag";sx=e.clientX;dx=0;downOn=e.target.closest(".globe");stage.setPointerCapture(e.pointerId)});
 stage.addEventListener("pointermove",e=>{if(phase!=="drag")return;dx=e.clientX-sx;offX=dx*0.6;theta=0;drift=dx*0.05});
 stage.addEventListener("pointerup",()=>{if(phase!=="drag")return;
+  if(Math.abs(dx)<6){offX=0;phase="idle";onTap(downOn);return}
   if(Math.abs(dx)>110)fling(dx>0);else settle();});
+
+// double tap on the person your friend picked = you like her too → this pair is passed automatically
+function onTap(el){
+  const now=performance.now();
+  if(el&&el===lastTap.el&&now-lastTap.t<350){lastTap={el:null,t:0};
+    const p=PAIRS[pi%PAIRS.length];
+    if(mode==="pairs"&&p.pick&&el.classList.contains("g1")){
+      el.classList.add("pulse");
+      note=`You and ${FRIENDS[p.pick.f].name} both like ${W[p.pick.of].name}`;noteUntil=now+900;phase="note";
+      setTimeout(()=>{el.classList.remove("pulse");fling(false)},900);
+    }
+    return;}
+  lastTap={el,t:now};
+}
 stage.addEventListener("pointercancel",()=>{if(phase==="drag")settle()});
 addEventListener("keydown",e=>{if(phase!=="idle")return;if(e.key==="ArrowRight")fling(true);if(e.key==="ArrowLeft")fling(false)});
 
