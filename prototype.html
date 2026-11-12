@@ -89,12 +89,13 @@ const W={ava:P("Ava",21,"a",0),zuri:P("Zuri",22,"a",1),mei:P("Mei",21,"a",2),pri
   sofia:P("Sofia",22,"c",0),elle:P("Elle",21,"c",1),jade:P("Jade",21,"c",2),yuna:P("Yuna",22,"c",3)};
 const FRIENDS={jake:P("Jake",22,"b",2),dev:P("Dev",22,"b",3),leo:P("Leo",21,"b",5)};
 
+// pairs only ever include someone one of your friends already liked
 const PAIRS=[
   {a:"ava",b:"lucia",pick:{f:"jake",of:"lucia"}},
-  {a:"mei",b:"yuna",pick:null},
+  {a:"mei",b:"yuna",pick:{f:"leo",of:"yuna"}},
   {a:"zuri",b:"ama",pick:{f:"dev",of:"zuri"}},
   {a:"sofia",b:"elle",pick:{f:"leo",of:"sofia"}},
-  {a:"priya",b:"nora",pick:null},
+  {a:"priya",b:"nora",pick:{f:"dev",of:"priya"}},
   {a:"jade",b:"tala",pick:{f:"jake",of:"tala"}},
 ];
 // individuals: each person arrives with the friend she'd bring
