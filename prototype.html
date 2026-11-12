@@ -131,7 +131,8 @@ function render(){
   const b=$("#bodies"), f=$("#friend");
   if(mode==="pairs"){
     const p=PAIRS[pi%PAIRS.length];
-    b.innerHTML=globeHTML(W[p.a],168,`${W[p.a].name}, ${W[p.a].age}`,"g0")+globeHTML(W[p.b],168,`${W[p.b].name}, ${W[p.b].age}`,"g1");
+    const [L,R]=slots(p).map(id=>W[id]);
+    b.innerHTML=globeHTML(L,168,`${L.name}, ${L.age}`,"g0")+globeHTML(R,168,`${R.name}, ${R.age}`,"g1");
     if(p.pick){const fr=FRIENDS[p.pick.f];f.innerHTML=globeHTML(fr,44,"")+`<span>${fr.name}</span>`;f.style.display="block"}
     else{f.style.display="none";$("#tether").innerHTML=""}
   }else{
@@ -140,6 +141,8 @@ function render(){
     f.style.display="none";$("#tether").innerHTML="";
   }
 }
+
+function slots(p){return p.pick&&p.pick.of===p.a?[p.b,p.a]:[p.a,p.b]}  // [front-left, back-right]; friend's pick always back-right
 
 /* ---------- frame loop: hover at rest, orbit while swiping ---------- */
 let t0=performance.now();
@@ -151,16 +154,17 @@ function frame(now){
     const r=72;                                    // half-distance: 144 apart, 168 wide → slight overlap
     const pts=[0,1].map(k=>{
       const a=theta+(k?0:Math.PI);
-      const x=Math.cos(a)*r, y=Math.sin(a)*r*0.32, z=Math.sin(a);
+      // tilted orbit plane: at rest the right globe sits higher and further back, the left one lower and in front
+      const x=Math.cos(a)*r, y=Math.sin(a)*r*0.32-Math.cos(a)*30, z=Math.sin(a)-0.55*Math.cos(a);
       const bob=Math.sin(t*0.9+k*1.7)*5*(phase==="idle"?1:0.3);
-      return {x:cx+x, y:cy+y+bob, s:scl*(1+0.12*z), z};
+      return {x:cx+x, y:cy+y+bob, s:scl*(1+0.09*z), z};
     });
-    [g0,g1].forEach((g,k)=>{const q=pts[k];g.style.transform=`translate(${q.x}px,${q.y}px) scale(${q.s})`;g.style.zIndex=q.z>0?2:1;g.style.opacity=op;
-      g.querySelector(".photo").style.filter=`brightness(${0.82+0.18*(q.z+1)/2})`;});
+    [g0,g1].forEach((g,k)=>{const q=pts[k];g.style.transform=`translate(${q.x}px,${q.y}px) scale(${q.s})`;g.style.zIndex=q.z>=pts[1-k].z?2:1;g.style.opacity=op;
+      g.querySelector(".photo").style.filter=`brightness(${0.84+0.16*Math.min(1,(q.z+1)/2)})`;});
     // friend's selection indicator
     const p=PAIRS[pi%PAIRS.length],fe=$("#friend");
     if(p.pick){const fx=28,fy=78;fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
-      const tgt=pts[p.pick.of===p.a?0:1];
+      const tgt=pts[1];
       $("#tether").innerHTML=`<line x1="${fx+22}" y1="${fy+44}" x2="${tgt.x}" y2="${tgt.y-84*tgt.s}" stroke="rgba(220,228,255,${.45*op})" stroke-width="1" stroke-dasharray="2 5"/>`;}
   }else if(g0){
     // individual: arcs around an unseen center while swiping
@@ -210,7 +214,7 @@ function showMatch(next){
   let her,herFriend,wing;
   if(mode==="pairs"){const p=PAIRS[pi%PAIRS.length];
     wing=p.pick?p.pick.f:"jake";
-    const wingGets=p.pick?p.pick.of:p.b; herFriend=wingGets; her=wingGets===p.a?p.b:p.a;}
+    const [front,back]=slots(p); her=front; herFriend=back;}
   else{const s=SOLO[si%SOLO.length];her=s.id;herFriend=s.with;wing=["jake","dev","leo"][si%3];}
   const q=$("#quad");
   const people=[[null,"You"],[W[her]],[FRIENDS[wing]],[W[herFriend]]];
