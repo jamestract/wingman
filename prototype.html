@@ -158,7 +158,7 @@ let t0=performance.now(), tOp=1;
 function frame(now){
   const t=(now-t0)/1000, W2=stage.clientWidth, H2=stage.clientHeight;
   const lift=200*(offX/W2)**2;                     // rises toward the edges, bottoms out on screen
-  const cx=W2/2+offX, cy=H2*0.45-lift;
+  const cx=W2/2+offX, cy=H2*0.52-lift;
   tOp+=(((phase==="idle"||phase==="enter")&&Math.abs(offX)<2?1:0)-tOp)*(tOp>0.5&&phase==="drag"?0.35:0.12);  // tether fades fast on swipe
   const g0=$(".g0"), g1=$(".g1");
   if(mode==="pairs"&&g0&&g1){
@@ -174,7 +174,7 @@ function frame(now){
       g.querySelector(".photo").style.filter=`brightness(${0.84+0.16*Math.min(1,(q.z+1)/2)})`;});
     // friend's selection indicator
     const p=PAIRS[pi%PAIRS.length],fe=$("#friend");
-    if(p.pick){const fx=W2-28-44+offX,fy=78-lift+Math.sin(t*0.9+3.1)*2*(phase==="idle"?1:0.3);fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
+    if(p.pick){const fx=W2-28-44+offX,fy=140-lift+Math.sin(t*0.9+3.1)*2*(phase==="idle"?1:0.3);fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
       const tgt=pts[1];
       // curved, round-capped dotted line from your friend down to the person he picked
       const x1=fx-3,y1=fy+22,x2=tgt.x+40*tgt.s,y2=tgt.y-78*tgt.s;
