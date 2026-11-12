@@ -172,8 +172,8 @@ function frame(now){
     if(p.pick){const fx=W2-28-44,fy=78+Math.sin(t*0.9+3.1)*2*(phase==="idle"?1:0.3);fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
       const tgt=pts[1];
       // curved, round-capped dotted line from your friend down to the person he picked
-      const x1=fx+22,y1=fy+62,x2=tgt.x+40*tgt.s,y2=tgt.y-78*tgt.s;
-      const c1x=x1-80,c1y=y1+(y2-y1)*0.2,c2x=x2-40,c2y=y2-(y2-y1)*0.6;
+      const x1=fx-3,y1=fy+22,x2=tgt.x+40*tgt.s,y2=tgt.y-78*tgt.s;
+      const c1x=x1-55,c1y=y1+4,c2x=x2-30,c2y=y2-(y2-y1)*0.55;
       $("#tether").innerHTML=`<path d="M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}" fill="none" stroke="rgba(220,228,255,${.55*op})" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0.1 7"/>`;}
   }else if(g0){
     // individual: arcs around an unseen center while swiping
