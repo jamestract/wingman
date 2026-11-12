@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Wingman Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:#000;color:#e9ebf5;font-family:Inter,system-ui,sans-serif;overflow:hidden}
+  body{display:flex;justify-content:center;align-items:center}
+  .phone{position:relative;width:100%;max-width:420px;height:100%;max-height:880px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 70% 45% at 70% 25%, rgba(70,60,140,.22), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 20% 75%, rgba(30,70,120,.18), transparent 70%),
+      #03040a}
+  @media(min-width:500px){.phone{border-radius:36px;border:1px solid #1c1c24;height:92vh}}
+  canvas{position:absolute;inset:0;width:100%;height:100%}
+
+  .modes{position:absolute;top:22px;left:0;right:0;display:flex;justify-content:center;gap:22px;z-index:5}
+  .modes button{background:none;border:0;color:rgba(233,235,245,.45);font:inherit;font-size:13px;font-weight:500;letter-spacing:.3px;cursor:pointer;padding:6px 2px;border-bottom:1px solid transparent}
+  .modes button.on{color:#fff;border-color:rgba(255,255,255,.6)}
+
+  .stage{position:absolute;inset:0;touch-action:none;cursor:grab;user-select:none}
+  .stage:active{cursor:grabbing}
+
+  .globe{position:absolute;left:0;top:0;width:var(--s);height:var(--s);margin:calc(var(--s)/-2) 0 0 calc(var(--s)/-2);border-radius:50%;will-change:transform}
+  .globe .photo{position:absolute;inset:0;border-radius:50%;background-repeat:no-repeat;
+    background-size:calc(var(--s)*5) calc(var(--s)*2.5);background-color:#222}
+  .globe .shade{position:absolute;inset:0;border-radius:50%;
+    background:
+      radial-gradient(circle at 34% 28%, rgba(255,255,255,.22), rgba(255,255,255,0) 38%),
+      radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 58%, rgba(3,4,18,.55) 86%, rgba(3,4,18,.85) 100%);
+    box-shadow:0 0 0 1px rgba(190,205,255,.28), 0 0 28px rgba(140,160,255,.22), 0 0 70px rgba(90,110,220,.12)}
+  .globe .label{position:absolute;left:50%;top:calc(100% + 12px);transform:translateX(-50%);white-space:nowrap;font-size:14px;font-weight:500;text-align:center;text-shadow:0 1px 8px #000}
+  .globe .label small{display:block;font-size:11px;font-weight:400;color:rgba(233,235,245,.55);margin-top:2px}
+  .globe.you .photo{background:radial-gradient(circle at 40% 35%, #3a3f5c, #14162a);display:flex;align-items:center;justify-content:center;font-size:13px;color:#cfd3ea}
+
+  .friend{position:absolute;z-index:4;pointer-events:none}
+  .friend .globe{--s:44px;position:relative;margin:0}
+  .friend span{display:block;text-align:center;font-size:10px;color:rgba(233,235,245,.6);margin-top:6px;width:44px}
+  svg.tether{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+
+  .globe.pulse .shade{animation:pulse .9s ease-out}
+  @keyframes pulse{0%{box-shadow:0 0 0 1px rgba(190,205,255,.28),0 0 0 0 rgba(255,194,214,.7)}100%{box-shadow:0 0 0 1px rgba(190,205,255,.28),0 0 0 26px rgba(255,194,214,0)}}
+  .verdict{position:absolute;top:11%;left:0;right:0;text-align:center;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:0 24px;opacity:0;pointer-events:none;z-index:4}
+
+  .hint{position:absolute;bottom:26px;left:0;right:0;text-align:center;font-size:11px;color:rgba(233,235,245,.35);letter-spacing:.3px;pointer-events:none}
+
+  .overlay{position:absolute;inset:0;z-index:10;background:rgba(3,4,10,.86);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .overlay.on{display:flex;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .quad{position:relative;width:240px;height:200px;margin-bottom:28px}
+  .quad .globe{--s:84px;transition:transform 1.1s cubic-bezier(.2,.8,.2,1)}
+  .overlay h1{font-size:22px;font-weight:600}
+  .overlay p{font-size:13px;color:rgba(233,235,245,.6);margin-top:8px;line-height:1.6}
+  .overlay button{margin-top:28px;background:none;border:1px solid rgba(255,255,255,.3);color:#fff;font:inherit;font-size:13px;padding:11px 26px;border-radius:999px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <canvas id="sky"></canvas>
+  <div class="modes">
+    <button class="on" data-mode="pairs">Pairs</button>
+    <button data-mode="solo">Individuals</button>
+  </div>
+  <div class="stage" id="stage">
+    <svg class="tether" id="tether"></svg>
+    <div class="friend" id="friend"></div>
+    <div id="bodies"></div>
+  </div>
+  <div class="verdict" id="verdict"></div>
+  <div class="hint">swipe right to double date · left to pass</div>
+
+  <div class="overlay" id="match">
+    <div class="quad" id="quad"></div>
+    <h1>Double date set</h1>
+    <p id="matchSub"></p>
+    <p>Group chat made · Everyone notified</p>
+    <button id="cont">Continue</button>
+  </div>
+</div>
+
+<script>
+/* ---------- people (portrait sheets are 4x2 grids) ---------- */
+const P=(name,age,s,i)=>({name,age,s,i});
+const W={ava:P("Ava",21,"a",0),zuri:P("Zuri",22,"a",1),mei:P("Mei",21,"a",2),priya:P("Priya",22,"a",3),
+  lucia:P("Lucia",21,"a",4),nora:P("Nora",20,"a",5),tala:P("Tala",22,"a",6),ama:P("Ama",21,"a",7),
+  sofia:P("Sofia",22,"c",0),elle:P("Elle",21,"c",1),jade:P("Jade",21,"c",2),yuna:P("Yuna",22,"c",3)};
+const FRIENDS={jake:P("Jake",22,"b",2),dev:P("Dev",22,"b",3),leo:P("Leo",21,"b",5)};
+
+// pairs only ever include someone one of your friends already liked
+const PAIRS=[
+  {a:"ava",b:"lucia",pick:{f:"jake",of:"lucia"}},
+  {a:"mei",b:"yuna",pick:{f:"leo",of:"yuna"}},
+  {a:"zuri",b:"ama",pick:{f:"dev",of:"zuri"}},
+  {a:"sofia",b:"elle",pick:{f:"leo",of:"sofia"}},
+  {a:"priya",b:"nora",pick:{f:"dev",of:"priya"}},
+  {a:"jade",b:"tala",pick:{f:"jake",of:"tala"}},
+];
+// individuals: each person arrives with the friend she'd bring
+const SOLO=["elle","priya","jade","nora","yuna","ama"].map(id=>{const p=PAIRS.find(x=>x.a===id||x.b===id);return {id,with:p.a===id?p.b:p.a}});
+
+/* ---------- state ---------- */
+let mode="pairs", pi=0, si=0;
+let theta=0, offX=0, scl=1, op=1, drift=0;
+let phase="idle", anim=null;
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+function globeHTML(p,size,label,cls=""){
+  if(!p)return `<div class="globe you ${cls}" style="--s:${size}px"><div class="photo">You</div><div class="shade"></div></div>`;
+  const c=p.i%4,r=Math.floor(p.i/4);
+  const bp=`calc(var(--s)*${(0.5-(c+0.5)*1.25).toFixed(4)}) calc(var(--s)*${(0.5-(r+0.42)*1.25).toFixed(4)})`;
+  return `<div class="globe ${cls}" style="--s:${size}px"><div class="photo" style="background-image:url(assets/portraits-${p.s}.jpg);background-position:${bp}"></div><div class="shade"></div>${label?`<div class="label">${label}</div>`:""}</div>`;
+}
+
+/* ---------- starfield ---------- */
+(function(){
+  const c=$("#sky"),x=c.getContext("2d");let w,h,S=[],dpr=devicePixelRatio||1;
+  function size(){const r=c.getBoundingClientRect();w=c.width=r.width*dpr;h=c.height=r.height*dpr;
+    S=Array.from({length:260},()=>({x:Math.random()*w,y:Math.random()*h,r:(Math.random()**3*1.3+.25)*dpr,a:.25+Math.random()*.6,t:Math.random()*6,z:.2+Math.random()}))}
+  size();addEventListener("resize",size);
+  (function draw(){x.clearRect(0,0,w,h);
+    for(const s of S){s.t+=.012;s.x-=.04*s.z*dpr+(drift*.02*s.z);if(s.x<0)s.x+=w;if(s.x>w)s.x-=w;
+      x.globalAlpha=s.a*(.7+.3*Math.sin(s.t));x.fillStyle="#dfe4ff";x.beginPath();x.arc(s.x,s.y,s.r,0,7);x.fill()}
+    requestAnimationFrame(draw)})();
+})();
+
+/* ---------- state ---------- */
+const stage=$("#stage");
+
+function render(){
+  const b=$("#bodies"), f=$("#friend");
+  if(mode==="pairs"){
+    const p=PAIRS[pi%PAIRS.length];
+    const [L,R]=slots(p).map(id=>W[id]);
+    b.innerHTML=globeHTML(L,168,`${L.name}, ${L.age}`,"g0")+globeHTML(R,168,`${R.name}, ${R.age}`,"g1");
+    if(p.pick){const fr=FRIENDS[p.pick.f];f.innerHTML=globeHTML(fr,44,"")+`<span>${fr.name}</span>`;f.style.display="block"}
+    else{f.style.display="none";$("#tether").innerHTML=""}
+  }else{
+    const s=SOLO[si%SOLO.length],x=W[s.id];
+    b.innerHTML=globeHTML(x,200,`${x.name}, ${x.age}<small>with ${W[s.with].name}</small>`,"g0");
+    f.style.display="none";$("#tether").innerHTML="";
+  }
+}
+
+// mock compatibility with you (0-100); in the real app this comes from the matching model
+const FIT={ava:88,zuri:74,mei:81,priya:69,lucia:77,nora:90,tala:72,ama:85,sofia:79,elle:83,jade:91,yuna:76};
+// [front-left, back-right]: your friend's pick always goes back-right; with no pick, whoever fits you best goes front
+function slots(p){
+  if(p.pick)return p.pick.of===p.a?[p.b,p.a]:[p.a,p.b];
+  return FIT[p.a]>=FIT[p.b]?[p.a,p.b]:[p.b,p.a];
+}
+
+// anonymous friend: silhouette globe, no name, until the date is set
+const ANON=`<div class="globe" style="--s:44px"><div class="photo" style="background:radial-gradient(circle at 40% 35%,#363b56,#12142a)"><svg viewBox="0 0 44 44" width="44" height="44"><circle cx="22" cy="17" r="7" fill="rgba(210,218,245,.55)"/><path d="M8 40c1.5-8 7.5-12 14-12s12.5 4 14 12" fill="rgba(210,218,245,.55)"/></svg></div><div class="shade"></div></div>`;
+
+/* ---------- frame loop: hover at rest; swipes travel a shallow parabola, lowest at center ---------- */
+let t0=performance.now(), tOp=1, note="", noteUntil=0;
+function frame(now){
+  const t=(now-t0)/1000, W2=stage.clientWidth, H2=stage.clientHeight;
+  const lift=55*(offX/W2)**2;                     // rises toward the edges, bottoms out on screen
+  const shrink=1-0.5*Math.min(1,Math.abs(offX)/W2)**2;   // gradual, tied to position: ~50% size at the edge
+  const cx=W2/2+offX, cy=H2*0.52-lift;
+  tOp+=(((phase==="idle"||phase==="enter")&&Math.abs(offX)<2?1:0)-tOp)*(tOp>0.5&&phase==="drag"?0.35:0.12);  // tether fades fast on swipe
+  const g0=$(".g0"), g1=$(".g1");
+  if(mode==="pairs"&&g0&&g1){
+    const r=72;                                    // half-distance: 144 apart, 168 wide → slight overlap
+    const pts=[0,1].map(k=>{
+      const a=theta+(k?0:Math.PI);
+      // tilted orbit plane: at rest the right globe sits higher and further back, the left one lower and in front
+      const x=Math.cos(a)*r, y=Math.sin(a)*r*0.32-Math.cos(a)*30, z=Math.sin(a)-0.55*Math.cos(a);
+      const bob=Math.sin(t*0.9+k*1.7)*5;
+      return {x:cx+x, y:cy+y+bob, s:scl*shrink*(1+0.09*z), z};
+    });
+    [g0,g1].forEach((g,k)=>{const q=pts[k];g.style.transform=`translate(${q.x}px,${q.y}px) scale(${q.s})`;g.style.zIndex=q.z>=pts[1-k].z?2:1;g.style.opacity=op;
+      g.querySelector(".photo").style.filter=`brightness(${0.84+0.16*Math.min(1,(q.z+1)/2)})`;});
+    // friend's selection indicator
+    const p=PAIRS[pi%PAIRS.length],fe=$("#friend");
+    if(p.pick){const fx=W2-28-44+offX,fy=140-lift+Math.sin(t*0.9+3.1)*2;fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;fe.style.transform=`scale(${shrink})`;
+      const tgt=pts[1];
+      // curved, round-capped dotted line from your friend down to the person he picked
+      const x1=fx-3,y1=fy+22,x2=tgt.x+40*tgt.s,y2=tgt.y-78*tgt.s;
+      const c1x=x1-55,c1y=y1+4,c2x=x2-30,c2y=y2-(y2-y1)*0.55;
+      $("#tether").innerHTML=`<path d="M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}" fill="none" stroke="rgba(220,228,255,${.55*op*tOp})" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0.1 7"/>`;}
+  }else if(g0){
+    // individual: arcs around an unseen center while swiping
+    const R=150, a=theta;
+    const x=Math.sin(a)*R, y=(1-Math.cos(a))*R*0.28, z=Math.cos(a);
+    const bob=Math.sin(t*0.9)*6;
+    g0.style.transform=`translate(${W2/2+x+offX}px,${cy+y+bob}px) scale(${scl*shrink*(0.85+0.15*z)})`;g0.style.opacity=op;
+  }
+  // verdict text
+  const v=$("#verdict");
+  if(now<noteUntil){v.textContent=note;v.style.color="#ffc2d6";v.style.opacity=1}
+  else if(phase==="drag"||phase==="fling"){const d=offX;v.textContent=d>0?"Interested":"Pass";v.style.color=d>0?"#cfe0ff":"rgba(233,235,245,.6)";v.style.opacity=Math.min(1,Math.abs(d)/120)*op}
+  else v.style.opacity=0;
+  if(anim)anim(now);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ---------- gestures ---------- */
+let sx=0, dx=0;
+let downOn=null, lastTap={el:null,t:0};
+stage.addEventListener("pointerdown",e=>{if(phase!=="idle")return;phase="drag";sx=e.clientX;dx=0;downOn=e.target.closest(".globe");stage.setPointerCapture(e.pointerId)});
+stage.addEventListener("pointermove",e=>{if(phase!=="drag")return;dx=e.clientX-sx;offX=dx*0.6;theta=0;drift=dx*0.05});
+stage.addEventListener("pointerup",()=>{if(phase!=="drag")return;
+  if(Math.abs(dx)<6){offX=0;phase="idle";onTap(downOn);return}
+  if(Math.abs(dx)>110)fling(dx>0);else settle();});
+
+// double tap on the person your friend picked = you like her too → this pair is passed automatically
+function onTap(el){
+  const now=performance.now();
+  if(el&&el===lastTap.el&&now-lastTap.t<350){lastTap={el:null,t:0};
+    const p=PAIRS[pi%PAIRS.length];
+    if(mode==="pairs"&&p.pick&&el.classList.contains("g1")){
+      el.classList.add("pulse");
+      note=`You and ${FRIENDS[p.pick.f].name} both like ${W[p.pick.of].name}`;noteUntil=now+900;phase="note";
+      setTimeout(()=>{el.classList.remove("pulse");fling(false)},900);
+    }
+    return;}
+  lastTap={el,t:now};
+}
+stage.addEventListener("pointercancel",()=>{if(phase==="drag")settle()});
+addEventListener("keydown",e=>{if(phase!=="idle")return;if(e.key==="ArrowRight")fling(true);if(e.key==="ArrowLeft")fling(false)});
+
+const ease=t=>1-Math.pow(1-t,3);
+function tween(ms,step,done){const s=performance.now();anim=now=>{const k=Math.min(1,(now-s)/ms);step(k);if(k>=1){anim=null;done&&done()}}}
+
+function settle(){phase="settle";const th=theta,ox=offX;
+  tween(450,k=>{const e=ease(k);theta=th*(1-e);offX=ox*(1-e);drift=0},()=>phase="idle")}
+
+function fling(like){phase="fling";const th=theta,ox=offX,dir=like?1:-1;
+  if(Math.abs(offX)<1)offX=dir*2;
+  tween(380,k=>{const e=k*k;                  // accelerate off screen as one unit
+    theta=th*Math.max(0,1-k*4);                  // snap back side by side, no orbiting on the way out
+    offX=ox+dir*e*stage.clientWidth*1.1; op=1-e*e; drift=dir*20*(1-k)},
+  ()=>{const done=()=>{advance();enter(like?0:1)};
+    if(like)showMatch(done);else done();});
+}
+// from: 1 slides in from the right edge (after a pass), 0 fades in place
+function enter(from=0){phase="enter";theta=0;const ox=from*stage.clientWidth*1.1;/* mirror of the exit path */offX=ox;scl=from?1:.85;op=0;
+  tween(from?500:450,k=>{const e=from?1-(1-k)*(1-k):ease(k);offX=ox*(1-e);scl=from?1:.85+.15*e;op=from?Math.min(1,k*2):e;drift=0},()=>phase="idle")}
+function advance(){if(mode==="pairs")pi++;else si++;render()}
+
+/* ---------- double date set ---------- */
+function showMatch(next){
+  let her,herFriend,wing;
+  if(mode==="pairs"){const p=PAIRS[pi%PAIRS.length];
+    wing=p.pick?p.pick.f:"jake";
+    const [front,back]=slots(p); her=front; herFriend=back;}
+  else{const s=SOLO[si%SOLO.length];her=s.id;herFriend=s.with;wing=["jake","dev","leo"][si%3];}
+  const q=$("#quad");
+  const people=[[null,"You"],[W[her]],[FRIENDS[wing]],[W[herFriend]]];
+  const start=[[-60,-40],[300,-40],[-60,240],[300,240]], end=[[78,62],[162,62],[78,146],[162,146]];
+  q.innerHTML=people.map((x,k)=>globeHTML(x[0],84,"",`q${k}`)).join("");
+  [...q.children].forEach((g,k)=>{g.style.transform=`translate(${start[k][0]}px,${start[k][1]}px) scale(.5)`});
+  $("#matchSub").textContent=`You + ${W[her].name}  ·  ${FRIENDS[wing].name} + ${W[herFriend].name}`;
+  $("#match").classList.add("on");
+  requestAnimationFrame(()=>requestAnimationFrame(()=>[...q.children].forEach((g,k)=>{g.style.transform=`translate(${end[k][0]}px,${end[k][1]}px) scale(1)`})));
+  $("#cont").onclick=()=>{$("#match").classList.remove("on");next()};
+}
+
+/* ---------- modes ---------- */
+document.querySelectorAll(".modes button").forEach(b=>b.onclick=()=>{
+  if(phase!=="idle"||b.dataset.mode===mode)return;
+  mode=b.dataset.mode;document.querySelectorAll(".modes button").forEach(x=>x.classList.toggle("on",x===b));
+  render();enter();});
+
+render();enter();
+</script>
+</body>
+</html>
