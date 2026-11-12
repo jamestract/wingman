@@ -197,7 +197,7 @@ requestAnimationFrame(frame);
 /* ---------- gestures ---------- */
 let sx=0, dx=0;
 stage.addEventListener("pointerdown",e=>{if(phase!=="idle")return;phase="drag";sx=e.clientX;dx=0;stage.setPointerCapture(e.pointerId)});
-stage.addEventListener("pointermove",e=>{if(phase!=="drag")return;dx=e.clientX-sx;offX=dx*0.35;theta=dx/(mode==="pairs"?110:260);drift=dx*0.05});
+stage.addEventListener("pointermove",e=>{if(phase!=="drag")return;dx=e.clientX-sx;offX=dx*0.6;theta=0;drift=dx*0.05});
 stage.addEventListener("pointerup",()=>{if(phase!=="drag")return;
   if(Math.abs(dx)>110)fling(dx>0);else settle();});
 stage.addEventListener("pointercancel",()=>{if(phase==="drag")settle()});
