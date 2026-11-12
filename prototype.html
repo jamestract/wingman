@@ -133,7 +133,7 @@ function render(){
     const p=PAIRS[pi%PAIRS.length];
     const [L,R]=slots(p).map(id=>W[id]);
     b.innerHTML=globeHTML(L,168,`${L.name}, ${L.age}`,"g0")+globeHTML(R,168,`${R.name}, ${R.age}`,"g1");
-    if(p.pick){const fr=FRIENDS[p.pick.f];f.innerHTML=globeHTML(fr,44,"")+`<span>${fr.name}</span>`;f.style.display="block"}
+    if(p.pick){f.innerHTML=ANON+`<span>A friend</span>`;f.style.display="block"}
     else{f.style.display="none";$("#tether").innerHTML=""}
   }else{
     const s=SOLO[si%SOLO.length],x=W[s.id];
@@ -149,6 +149,9 @@ function slots(p){
   if(p.pick)return p.pick.of===p.a?[p.b,p.a]:[p.a,p.b];
   return FIT[p.a]>=FIT[p.b]?[p.a,p.b]:[p.b,p.a];
 }
+
+// anonymous friend: silhouette globe, no name, until the date is set
+const ANON=`<div class="globe" style="--s:44px"><div class="photo" style="background:radial-gradient(circle at 40% 35%,#363b56,#12142a)"><svg viewBox="0 0 44 44" width="44" height="44"><circle cx="22" cy="17" r="7" fill="rgba(210,218,245,.55)"/><path d="M8 40c1.5-8 7.5-12 14-12s12.5 4 14 12" fill="rgba(210,218,245,.55)"/></svg></div><div class="shade"></div></div>`;
 
 /* ---------- frame loop: hover at rest, orbit while swiping ---------- */
 let t0=performance.now();
