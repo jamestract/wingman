@@ -133,7 +133,7 @@ function render(){
     const p=PAIRS[pi%PAIRS.length];
     const [L,R]=slots(p).map(id=>W[id]);
     b.innerHTML=globeHTML(L,168,`${L.name}, ${L.age}`,"g0")+globeHTML(R,168,`${R.name}, ${R.age}`,"g1");
-    if(p.pick){f.innerHTML=ANON+`<span>A friend</span>`;f.style.display="block"}
+    if(p.pick){const fr=FRIENDS[p.pick.f];f.innerHTML=globeHTML(fr,44,"")+`<span>${fr.name}</span>`;f.style.display="block"}
     else{f.style.display="none";$("#tether").innerHTML=""}
   }else{
     const s=SOLO[si%SOLO.length],x=W[s.id];
