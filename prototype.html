@@ -42,7 +42,7 @@
   svg.tether{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
 
   .globe.pulse .shade{animation:pulse .9s ease-out}
-  @keyframes pulse{0%{box-shadow:0 0 0 1px rgba(190,205,255,.28),0 0 0 0 rgba(207,224,255,.7)}100%{box-shadow:0 0 0 1px rgba(190,205,255,.28),0 0 0 26px rgba(207,224,255,0)}}
+  @keyframes pulse{0%{box-shadow:0 0 0 1px rgba(190,205,255,.28),0 0 0 0 rgba(255,194,214,.7)}100%{box-shadow:0 0 0 1px rgba(190,205,255,.28),0 0 0 26px rgba(255,194,214,0)}}
   .verdict{position:absolute;top:11%;left:0;right:0;text-align:center;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:0 24px;opacity:0;pointer-events:none;z-index:4}
 
   .hint{position:absolute;bottom:26px;left:0;right:0;text-align:center;font-size:11px;color:rgba(233,235,245,.35);letter-spacing:.3px;pointer-events:none}
@@ -192,7 +192,7 @@ function frame(now){
   }
   // verdict text
   const v=$("#verdict");
-  if(now<noteUntil){v.textContent=note;v.style.color="#cfe0ff";v.style.opacity=1}
+  if(now<noteUntil){v.textContent=note;v.style.color="#ffc2d6";v.style.opacity=1}
   else if(phase==="drag"||phase==="fling"){const d=offX;v.textContent=d>0?"Interested":"Pass";v.style.color=d>0?"#cfe0ff":"rgba(233,235,245,.6)";v.style.opacity=Math.min(1,Math.abs(d)/120)*op}
   else v.style.opacity=0;
   if(anim)anim(now);
