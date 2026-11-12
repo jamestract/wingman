@@ -153,11 +153,13 @@ function slots(p){
 // anonymous friend: silhouette globe, no name, until the date is set
 const ANON=`<div class="globe" style="--s:44px"><div class="photo" style="background:radial-gradient(circle at 40% 35%,#363b56,#12142a)"><svg viewBox="0 0 44 44" width="44" height="44"><circle cx="22" cy="17" r="7" fill="rgba(210,218,245,.55)"/><path d="M8 40c1.5-8 7.5-12 14-12s12.5 4 14 12" fill="rgba(210,218,245,.55)"/></svg></div><div class="shade"></div></div>`;
 
-/* ---------- frame loop: hover at rest, orbit while swiping ---------- */
-let t0=performance.now();
+/* ---------- frame loop: hover at rest; swipes travel a shallow parabola, lowest at center ---------- */
+let t0=performance.now(), tOp=1;
 function frame(now){
   const t=(now-t0)/1000, W2=stage.clientWidth, H2=stage.clientHeight;
-  const cx=W2/2+offX, cy=H2*0.45;
+  const lift=200*(offX/W2)**2;                     // rises toward the edges, bottoms out on screen
+  const cx=W2/2+offX, cy=H2*0.45-lift;
+  tOp+=(((phase==="idle"||phase==="enter")&&Math.abs(offX)<2?1:0)-tOp)*(tOp>0.5&&phase==="drag"?0.35:0.12);  // tether fades fast on swipe
   const g0=$(".g0"), g1=$(".g1");
   if(mode==="pairs"&&g0&&g1){
     const r=72;                                    // half-distance: 144 apart, 168 wide → slight overlap
@@ -172,18 +174,18 @@ function frame(now){
       g.querySelector(".photo").style.filter=`brightness(${0.84+0.16*Math.min(1,(q.z+1)/2)})`;});
     // friend's selection indicator
     const p=PAIRS[pi%PAIRS.length],fe=$("#friend");
-    if(p.pick){const fx=W2-28-44+offX,fy=78+Math.sin(t*0.9+3.1)*2*(phase==="idle"?1:0.3);fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
+    if(p.pick){const fx=W2-28-44+offX,fy=78-lift+Math.sin(t*0.9+3.1)*2*(phase==="idle"?1:0.3);fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
       const tgt=pts[1];
       // curved, round-capped dotted line from your friend down to the person he picked
       const x1=fx-3,y1=fy+22,x2=tgt.x+40*tgt.s,y2=tgt.y-78*tgt.s;
       const c1x=x1-55,c1y=y1+4,c2x=x2-30,c2y=y2-(y2-y1)*0.55;
-      $("#tether").innerHTML=`<path d="M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}" fill="none" stroke="rgba(220,228,255,${.55*op})" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0.1 7"/>`;}
+      $("#tether").innerHTML=`<path d="M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}" fill="none" stroke="rgba(220,228,255,${.55*op*tOp})" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0.1 7"/>`;}
   }else if(g0){
     // individual: arcs around an unseen center while swiping
     const R=150, a=theta;
     const x=Math.sin(a)*R, y=(1-Math.cos(a))*R*0.28, z=Math.cos(a);
     const bob=Math.sin(t*0.9)*6*(phase==="idle"?1:0.3);
-    g0.style.transform=`translate(${W2/2+x+offX*0.4}px,${cy+y+bob}px) scale(${scl*(0.85+0.15*z)})`;g0.style.opacity=op;
+    g0.style.transform=`translate(${W2/2+x+offX}px,${cy+y+bob}px) scale(${scl*(0.85+0.15*z)})`;g0.style.opacity=op;
   }
   // verdict text
   const v=$("#verdict");
