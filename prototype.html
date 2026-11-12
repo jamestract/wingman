@@ -142,7 +142,13 @@ function render(){
   }
 }
 
-function slots(p){return p.pick&&p.pick.of===p.a?[p.b,p.a]:[p.a,p.b]}  // [front-left, back-right]; friend's pick always back-right
+// mock compatibility with you (0-100); in the real app this comes from the matching model
+const FIT={ava:88,zuri:74,mei:81,priya:69,lucia:77,nora:90,tala:72,ama:85,sofia:79,elle:83,jade:91,yuna:76};
+// [front-left, back-right]: your friend's pick always goes back-right; with no pick, whoever fits you best goes front
+function slots(p){
+  if(p.pick)return p.pick.of===p.a?[p.b,p.a]:[p.a,p.b];
+  return FIT[p.a]>=FIT[p.b]?[p.a,p.b]:[p.b,p.a];
+}
 
 /* ---------- frame loop: hover at rest, orbit while swiping ---------- */
 let t0=performance.now();
@@ -163,9 +169,12 @@ function frame(now){
       g.querySelector(".photo").style.filter=`brightness(${0.84+0.16*Math.min(1,(q.z+1)/2)})`;});
     // friend's selection indicator
     const p=PAIRS[pi%PAIRS.length],fe=$("#friend");
-    if(p.pick){const fx=28,fy=78;fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
+    if(p.pick){const fx=W2-28-44,fy=78;fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
       const tgt=pts[1];
-      $("#tether").innerHTML=`<line x1="${fx+22}" y1="${fy+44}" x2="${tgt.x}" y2="${tgt.y-84*tgt.s}" stroke="rgba(220,228,255,${.45*op})" stroke-width="1" stroke-dasharray="2 5"/>`;}
+      // curved, round-capped dotted line from your friend down to the person he picked
+      const x1=fx+22,y1=fy+62,x2=tgt.x+40*tgt.s,y2=tgt.y-78*tgt.s;
+      const c1x=x1+34,c1y=y1+(y2-y1)*0.55,c2x=x2+70,c2y=y2-(y2-y1)*0.35;
+      $("#tether").innerHTML=`<path d="M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}" fill="none" stroke="rgba(220,228,255,${.55*op})" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0.1 7"/>`;}
   }else if(g0){
     // individual: arcs around an unseen center while swiping
     const R=150, a=theta;
