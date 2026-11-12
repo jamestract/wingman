@@ -157,7 +157,7 @@ const ANON=`<div class="globe" style="--s:44px"><div class="photo" style="backgr
 let t0=performance.now(), tOp=1;
 function frame(now){
   const t=(now-t0)/1000, W2=stage.clientWidth, H2=stage.clientHeight;
-  const lift=200*(offX/W2)**2;                     // rises toward the edges, bottoms out on screen
+  const lift=110*(offX/W2)**2;                     // rises toward the edges, bottoms out on screen
   const shrink=1-0.5*Math.min(1,Math.abs(offX)/W2)**2;   // gradual, tied to position: ~50% size at the edge
   const cx=W2/2+offX, cy=H2*0.52-lift;
   tOp+=(((phase==="idle"||phase==="enter")&&Math.abs(offX)<2?1:0)-tOp)*(tOp>0.5&&phase==="drag"?0.35:0.12);  // tether fades fast on swipe
