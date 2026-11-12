@@ -212,13 +212,14 @@ function settle(){phase="settle";const th=theta,ox=offX;
 function fling(like){phase="fling";const th=theta,ox=offX,dir=like?1:-1;
   if(Math.abs(offX)<1)offX=dir*2;
   tween(750,k=>{const e=ease(k);
-    theta=th+dir*e*(mode==="pairs"?5.5:2.2);   // the orbit speeds up as they leave
+    theta=th;                                   // no extra spin on exit
     offX=ox+dir*e*stage.clientWidth*0.75; scl=1-0.55*e; op=1-e; drift=dir*20*(1-k)},
-  ()=>{const done=()=>{advance();enter()};
+  ()=>{const done=()=>{advance();enter(like?0:-1)};
     if(like)showMatch(done);else done();});
 }
-function enter(){phase="enter";theta=-3.2;offX=0;scl=.45;op=0;
-  tween(900,k=>{const e=ease(k);theta=-3.2*(1-e);scl=.45+.55*e;op=e;drift=0},()=>phase="idle")}
+// from: -1 slides in from the left edge (after a pass), 0 fades in place
+function enter(from=0){phase="enter";theta=0;const ox=from*stage.clientWidth*0.8;offX=ox;scl=from?1:.85;op=0;
+  tween(from?750:700,k=>{const e=ease(k);offX=ox*(1-e);scl=from?1:.85+.15*e;op=from?Math.min(1,k*2):e;drift=0},()=>phase="idle")}
 function advance(){if(mode==="pairs")pi++;else si++;render()}
 
 /* ---------- double date set ---------- */
