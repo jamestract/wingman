@@ -173,7 +173,7 @@ function frame(now){
       const tgt=pts[1];
       // curved, round-capped dotted line from your friend down to the person he picked
       const x1=fx+22,y1=fy+62,x2=tgt.x+40*tgt.s,y2=tgt.y-78*tgt.s;
-      const c1x=x1+34,c1y=y1+(y2-y1)*0.55,c2x=x2+70,c2y=y2-(y2-y1)*0.35;
+      const c1x=x1-80,c1y=y1+(y2-y1)*0.2,c2x=x2-40,c2y=y2-(y2-y1)*0.6;
       $("#tether").innerHTML=`<path d="M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}" fill="none" stroke="rgba(220,228,255,${.55*op})" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0.1 7"/>`;}
   }else if(g0){
     // individual: arcs around an unseen center while swiping
