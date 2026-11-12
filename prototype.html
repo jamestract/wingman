@@ -169,7 +169,7 @@ function frame(now){
       g.querySelector(".photo").style.filter=`brightness(${0.84+0.16*Math.min(1,(q.z+1)/2)})`;});
     // friend's selection indicator
     const p=PAIRS[pi%PAIRS.length],fe=$("#friend");
-    if(p.pick){const fx=W2-28-44,fy=78+Math.sin(t*0.9+3.1)*5*(phase==="idle"?1:0.3);fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
+    if(p.pick){const fx=W2-28-44,fy=78+Math.sin(t*0.9+3.1)*2*(phase==="idle"?1:0.3);fe.style.left=fx+"px";fe.style.top=fy+"px";fe.style.opacity=op;
       const tgt=pts[1];
       // curved, round-capped dotted line from your friend down to the person he picked
       const x1=fx+22,y1=fy+62,x2=tgt.x+40*tgt.s,y2=tgt.y-78*tgt.s;
