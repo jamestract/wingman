@@ -346,7 +346,6 @@ input[type="range"]{width:100%;accent-color:#aebfff;height:28px}
     <!-- ============ EXPLORE ============ -->
     <section class="view active" id="view-explore" role="tabpanel" aria-label="Explore pairs">
       <p class="flow-note" id="flowNote"></p>
-      <div class="filters" id="filters" role="group" aria-label="Filter pairs by vibe"></div>
       <div id="exploreMain">
         <div class="stage-wrap">
           <div class="stage" id="stage">
@@ -944,21 +943,6 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "ArrowRight") decide("like");
   if (e.key === "ArrowLeft") decide("pass");
 });
-/* Filters */
-var filtersEl = $("#filters");
-FILTERS.forEach(function (f) {
-  var b = document.createElement("button");
-  b.className = "filter-btn"; b.textContent = f.label;
-  b.setAttribute("aria-pressed", state.filter === f.id ? "true" : "false");
-  b.addEventListener("click", function () {
-    state.filter = f.id;
-    filtersEl.querySelectorAll(".filter-btn").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
-    b.setAttribute("aria-pressed", "true");
-    buildDeck(); enterAnim(0);
-  });
-  filtersEl.appendChild(b);
-});
-
 /* ================= Matches & chat ================= */
       function seedMatches() {
         var g = crewById("sundayleague");
