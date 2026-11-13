@@ -102,6 +102,18 @@ svg.tether{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;
 .act-pass{color:var(--ink60)}
 .act-super{border-color:rgba(255,194,214,.4);color:var(--pink)}
 .act-like{background:#e9ebf5;border-color:#e9ebf5;color:#0a0c18;font-weight:600}
+.rate-box{display:flex;flex-direction:column;gap:7px;padding:10px 22px 0;flex:none}
+.rate-row{display:flex;align-items:center;gap:9px}
+.rate-row .avatar{width:28px;height:28px}
+.rate-name{font-size:12.5px;width:46px;flex:none;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rate-opts{display:flex;gap:5px;flex:1}
+.rate-opt{flex:1;height:30px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:11.5px;color:var(--ink60);white-space:nowrap}
+.rate-opt[aria-pressed="true"].r2{background:rgba(255,194,214,.16);border-color:var(--pink);color:#fff}
+.rate-opt[aria-pressed="true"].r1{background:rgba(207,224,255,.14);border-color:var(--blue);color:#fff}
+.rate-opt[aria-pressed="true"].r0{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.45);color:#fff}
+.rate-private{font-size:10.5px;color:var(--ink35);text-align:center;letter-spacing:.2px}
+.act-like[disabled]{opacity:.45}
+.pending-tag{font-size:10px;font-weight:600;color:var(--ink45);border:1px dashed rgba(255,255,255,.3);padding:2px 7px;border-radius:999px;margin-left:8px;vertical-align:2px;white-space:nowrap}
 .hint{text-align:center;font-size:11px;color:var(--ink35);letter-spacing:.3px;padding:12px 20px 14px;flex:none}
 .details{overflow-y:auto;padding:2px 18px 30px;scrollbar-width:none;flex:1;min-height:0}
 .details::-webkit-scrollbar{display:none}
@@ -333,10 +345,6 @@ input[type="range"]{width:100%;accent-color:#aebfff;height:28px}
   <div class="screen">
     <!-- ============ EXPLORE ============ -->
     <section class="view active" id="view-explore" role="tabpanel" aria-label="Explore pairs">
-      <div class="modes" id="modeSwitch" role="group" aria-label="How pairs start">
-        <button type="button" class="on" data-mode="pairs">Dre started these</button>
-        <button type="button" data-mode="solo">Start a pair</button>
-      </div>
       <p class="flow-note" id="flowNote"></p>
       <div class="filters" id="filters" role="group" aria-label="Filter pairs by vibe"></div>
       <div id="exploreMain">
@@ -350,17 +358,17 @@ input[type="range"]{width:100%;accent-color:#aebfff;height:28px}
           <div class="verdict" id="verdict" aria-hidden="true"></div>
         </div>
         <div class="crew-info" id="crewInfo"></div>
+        <div class="rate-box" id="rateBox" role="group" aria-label="Rate both people privately"></div>
         <div class="actions-row">
           <button type="button" class="act-btn act-pass" id="btnPass">Pass</button>
-          <button type="button" class="act-btn act-super" id="btnSuper">Super like</button>
-          <button type="button" class="act-btn act-like" id="btnLike">Like</button>
+          <button type="button" class="act-btn act-like" id="btnLike">Send ratings</button>
         </div>
-        <p class="hint" id="exploreHint">swipe right to like · left to pass the pair</p>
+        <p class="hint" id="exploreHint">rate both, then swipe right to send · left to pass the duo</p>
         <div class="details" id="crewDetails"></div>
       </div>
       <div class="deck-empty" id="deckEmpty">
         <h3>That's everyone nearby</h3>
-        <p>You've seen every pair out tonight. Check back later, or widen your distance in Your duo.</p>
+        <p>You've seen every duo out tonight. Check back later, or widen your distance in Friends.</p>
         <button type="button" class="btn-pill" id="rescanBtn">See them again</button>
       </div>
     </section>
@@ -369,7 +377,7 @@ input[type="range"]{width:100%;accent-color:#aebfff;height:28px}
     <section class="view" id="view-matches" role="tabpanel" aria-label="Matched pairs">
       <div class="sec-head">
         <h2>Matches</h2>
-        <p>A match lands when both pairs have picked each other: one side starts it by liking someone first, their partner likes the other one, and the other pair sees both picks — who picked whom — on their feed. One pick back from their side and a chat opens for the four of you: message, plan dates, and play games together right in the chat.</p>
+        <p>Everyone on both duos privately rates the two people across: first choice, open to, or no. A match only lands when there's a pairing where all four of you get someone you rated first choice or open to. Wingman picks the best one, tells all four who's with whom, and opens one chat. Nobody ever sees anyone's ratings.</p>
       </div>
       <div class="match-layout" id="matchLayout">
         <div class="match-list" id="matchList"></div>
@@ -411,68 +419,62 @@ input[type="range"]{width:100%;accent-color:#aebfff;height:28px}
     </section>
 
     <!-- ============ YOUR DUO ============ -->
-    <section class="view" id="view-crew" role="tabpanel" aria-label="Your duo">
+    <section class="view" id="view-crew" role="tabpanel" aria-label="Your friend circle">
       <div class="sec-head">
-        <h2>Your duo</h2>
-        <p>Just you and Dre — two people, one pair. Every pair starts with one of you liking someone first; that sends the pair to the other's feed with the pick flagged. This is how your pair looks to everyone else.</p>
+        <h2>Your circle</h2>
+        <p>Wingman builds every duo from confirmed friends. You don't have a fixed partner: each duo in your feed pairs you with one friend from this list.</p>
       </div>
       <div class="crew-wrap">
         <div class="duo-head">
           <div id="myFaces"></div>
-          <h2 id="myNameBig">The Night Owls</h2>
-          <p class="meta">Your duo · You + Dre · Just the two of you</p>
-        </div>
-        <div class="dcard">
-          <h3>Your duo</h3>
-          <p class="body">Wingman is pairs only — two people per side, nobody else. Dre's first likes start your feed: when Dre likes someone, their pair shows up for you with his pick flagged. Your like on the other person sends both picks to their feed, showing who picked whom — and a match needs one pick back from their side.</p>
-          <p class="body">And it runs both ways: when you like someone first, that pair lands in Dre's feed with your pick flagged. Groups come later — for now, every match is pair to pair.</p>
+          <h2 id="myNameBig">Your circle</h2>
+          <p class="meta" id="circleMeta"></p>
         </div>
         <div class="dcard" id="myMembers"></div>
         <div class="dcard">
-          <p class="label">Our chat is named</p>
-          <p class="chatname">"Last Slice Committee" — every decision ends with pizza.</p>
+          <h3>How duos work</h3>
+          <p class="body">A duo is always two people who are in each other's circle, and a friend only counts once you've both confirmed. You never get paired with a stranger, and the feed only ever shows duos.</p>
         </div>
         <div class="dcard">
-          <h3>Looking for</h3>
-          <p class="body">Another pair down for a rooftop, a set list, and a 1am food truck debrief.</p>
-          <p class="into-line"><b>Into</b>Rooftop bars · Live music · Late-night food</p>
+          <h3>How matching works</h3>
+          <p class="body">Everyone on both sides privately rates both people across: first choice, open to, or no. A date is only set up if there's a one-to-one pairing where all four of you get someone you rated first choice or open to. Wingman picks the best pairing and tells everyone who's with whom.</p>
+          <p class="body">Your ratings stay private, even from your friends.</p>
+        </div>
+        <div class="dcard">
+          <h3>Coming later</h3>
+          <p class="body">Friends-of-friends mode: browse friends of your friends' dates one at a time. Parked until duo matching works.</p>
         </div>
         <div class="control-panel">
-          <div>
-            <h3>Pair name</h3>
-            <p class="cp-sub">Whatever you two call yourselves — this is the name other pairs see.</p>
-            <input type="text" class="text-input" id="groupName" value="The Night Owls" maxlength="40" autocomplete="off" aria-label="Your pair name" />
-          </div>
           <div class="toggle-row">
             <div>
               <h3>Going out</h3>
-              <p class="cp-sub">When you're out, your pair shows up in other pairs' feeds.</p>
+              <p class="cp-sub">When you're out, you can show up in duos with your friends.</p>
             </div>
             <div class="toggle-controls">
-              <button type="button" class="switch" id="statusSwitch" role="switch" aria-checked="true" aria-label="Pair is going out tonight"></button>
+              <button type="button" class="switch" id="statusSwitch" role="switch" aria-checked="true" aria-label="You're going out tonight"></button>
               <span class="status-pill live" id="statusPill">Out tonight</span>
             </div>
           </div>
           <div>
             <h3>Distance</h3>
-            <p class="cp-sub">How far away to look for other pairs.</p>
+            <p class="cp-sub">How far away to look for other duos.</p>
             <input type="range" id="radiusRange" min="1" max="25" value="5" step="1" aria-label="Search distance in miles" />
             <div class="range-row"><span>1 mi</span><output id="radiusOut">5 mi</output><span>25 mi</span></div>
           </div>
           <div>
-            <h3>Your pair's thing <span style="color:var(--ink35); font-size:12px;" id="vibeCount"></span></h3>
-            <p class="cp-sub">Pick up to five. These steer which pairs you see first.</p>
+            <h3>Your thing <span style="color:var(--ink35); font-size:12px;" id="vibeCount"></span></h3>
+            <p class="cp-sub">Pick up to five. These steer which duos you see first.</p>
             <div class="tag-picker" id="tagPicker"></div>
           </div>
           <div>
             <h3>Profile strength</h3>
-            <p class="cp-sub">How complete your pair looks to other pairs.</p>
+            <p class="cp-sub">How complete your profile looks to other duos.</p>
             <div class="sync-meter"><i id="syncBar"></i></div>
-            <p class="sync-note" id="syncNote">82% — add a pair anthem to hit 90%.</p>
+            <p class="sync-note" id="syncNote">82% — add another photo to hit 90%.</p>
           </div>
           <div class="signin-row">
             <button type="button" class="btn-text" id="signInBtn">Sign in</button>
-            <p style="font-size:11px;color:var(--ink35);margin-top:6px">Concept prototype — the pairs and photos shown are demos.</p>
+            <p style="font-size:11px;color:var(--ink35);margin-top:6px">Concept prototype — the people and photos shown are demos.</p>
           </div>
         </div>
       </div>
@@ -491,7 +493,7 @@ input[type="range"]{width:100%;accent-color:#aebfff;height:28px}
       Date ideas</button>
     <button type="button" class="tab-btn" role="tab" data-view="crew" aria-selected="false">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5c.8-3 2.9-4.5 5.5-4.5s4.7 1.5 5.5 4.5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M17.5 15.2c1.9.3 3.2 1.6 3.8 4"/></svg>
-      Your duo</button>
+      Friends</button>
   </nav>
 
   <div class="overlay" id="matchOverlay" role="dialog" aria-modal="true" aria-labelledby="matchTitle">
@@ -504,7 +506,7 @@ input[type="range"]{width:100%;accent-color:#aebfff;height:28px}
     </div>
     <h2 id="matchTitle">It's a match</h2>
     <p id="matchText"></p>
-    <p>One chat · your pair + their pair</p>
+    <p>One chat · all four of you</p>
     <div class="ov-actions">
       <button type="button" class="btn-pill" id="matchChatBtn">Open the chat</button>
       <button type="button" class="btn-text" id="matchKeepBtn">Keep looking</button>
@@ -527,7 +529,7 @@ var $ = function (sel) { return document.querySelector(sel); };
 function esc(s) { return String(s).replace(/</g, "&lt;"); }
 
 var CREWS = [
-        { id: "room4b", name: "Room 4B", kind: "Pair · Women", distance: "0.8 mi away", match: 98, instantMatch: true, duo: [0, 1], drePick: 0, theirPick: { by: "Maya", of: "Dre" },
+        { id: "room4b", name: "Room 4B", kind: "Pair · Women", distance: "0.8 mi away", match: 98, link: "Roommates", withFriend: "Dre", sim: { friend: [1, 2], them: [[2, 1], [1, 2]] },
           cats: ["nightlife", "music"],
           members: [ { name: "Maya", age: 24, role: "the planner", pic: { s: "a", i: 0 } }, { name: "June", age: 25, role: "karaoke menace", pic: { s: "a", i: 1 } } ],
           chatName: "\"Golden Hour\" — Maya's rule: arrive before sunset or don't arrive at all.",
@@ -535,7 +537,7 @@ var CREWS = [
           competitive: "Who gets the aux. There is a spreadsheet. June is losing.",
           looking: "Another pair that can actually keep up on the dance floor. Bonus points if you know a spot with no line.",
           into: "Rooftop bars · Live music · Dancing" },
-        { id: "quizteama", name: "Quizteama Aguilera", kind: "Pair · Men", distance: "1.4 mi away", match: 91, instantMatch: false, duo: [0, 1], drePick: 1,
+        { id: "quizteama", name: "Quizteama Aguilera", kind: "Pair · Men", distance: "1.4 mi away", match: 91, link: "Coworkers", withFriend: "Kai", sim: null,
           cats: ["games", "food"],
           members: [ { name: "Marcus", age: 26, role: "the navigator", pic: { s: "b", i: 4 } }, { name: "Devon", age: 25, role: "trivia ringer", pic: { s: "b", i: 0 } } ],
           chatName: "\"The Answer Is Greg\" — every answer is Greg until proven otherwise.",
@@ -543,7 +545,7 @@ var CREWS = [
           competitive: "The pub quiz leaderboard. We're one point off first and it is personal.",
           looking: "Another pair for Thursday trivia. Losing pair buys the next round — we have never bought a round.",
           into: "Trivia nights · Craft beer · Bonfires" },
-        { id: "winevinyl", name: "Wine & Vinyl", kind: "Pair · Women", distance: "2.1 mi away", match: 94, instantMatch: true, duo: [0, 1], drePick: 1, theirPick: { by: "Cleo", of: "You" },
+        { id: "winevinyl", name: "Wine & Vinyl", kind: "Pair · Women", distance: "2.1 mi away", match: 94, link: "College roommates", withFriend: "Leo", sim: { friend: [2, 1], them: [[1, 2], [2, 0]] },
           cats: ["arts", "food"],
           members: [ { name: "Zara", age: 25, role: "the curator", pic: { s: "a", i: 4 } }, { name: "Cleo", age: 24, role: "vintage hunter", pic: { s: "a", i: 7 } } ],
           chatName: "\"Side B\" — named for the half of every record Zara insists is better.",
@@ -551,7 +553,7 @@ var CREWS = [
           competitive: "Who found the rarest record this month. Cleo is insufferable about it.",
           looking: "Gallery night, then natural wine and strong opinions about both. Bring your hottest takes.",
           into: "Art galleries · Wine bars · Thrifting" },
-        { id: "sundayleague", name: "Sunday League", kind: "Pair · Men", distance: "3.0 mi away", match: 88, instantMatch: false, duo: [0, 1], drePick: 1,
+        { id: "sundayleague", name: "Sunday League", kind: "Pair · Men", distance: "3.0 mi away", match: 88, link: "Teammates", withFriend: "Dre", sim: null,
           cats: ["outdoors", "games"],
           members: [ { name: "Theo", age: 27, role: "the anchor", pic: { s: "b", i: 3 } }, { name: "Sam", age: 26, role: "grill sergeant", pic: { s: "b", i: 5 } } ],
           chatName: "\"Boat Noise\" — it's just Sam yelling. That's the whole chat.",
@@ -559,7 +561,7 @@ var CREWS = [
           competitive: "Cornhole. Theo keeps a trophy in his car, just in case.",
           looking: "Another pair for a lake day. We bring the boat and the cooler, you bring the playlist and the sunscreen.",
           into: "Boat days · BBQs · Sports bars" },
-        { id: "twodrink", name: "Two Drink Minimum", kind: "Pair · Women", distance: "1.1 mi away", match: 96, instantMatch: false, duo: [0, 1], drePick: 1,
+        { id: "twodrink", name: "Two Drink Minimum", kind: "Pair · Women", distance: "1.1 mi away", match: 96, link: "Best friends since 8th grade", withFriend: "Dre", sim: { friend: [2, 1], them: [[0, 1], [1, 0]] },
           cats: ["nightlife", "arts"],
           members: [ { name: "Ruby", age: 24, role: "the heckler (affectionate)", pic: { s: "c", i: 1 } }, { name: "Tess", age: 25, role: "cocktail scientist", pic: { s: "c", i: 2 } } ],
           chatName: "\"Front Row Forever\" — the comics know both their names now. This is becoming a problem.",
@@ -567,7 +569,7 @@ var CREWS = [
           competitive: "Who can make the bartender laugh first. Tess is undefeated.",
           looking: "Front row at the improv show Friday, drinks after. If your pair can't handle being volunteered on stage, swipe left.",
           into: "Comedy shows · Cocktail bars · Pop-ups" },
-        { id: "sendit", name: "Send It Society", kind: "Pair · Men", distance: "2.6 mi away", match: 90, instantMatch: false, duo: [0, 1], drePick: 1,
+        { id: "sendit", name: "Send It Society", kind: "Pair · Men", distance: "2.6 mi away", match: 90, link: "Climbing partners", withFriend: "Kai", sim: { friend: [0, 0], them: [[1, 1], [1, 1]] },
           cats: ["outdoors", "food"],
           members: [ { name: "Jules", age: 26, role: "route setter", pic: { s: "c", i: 4 } }, { name: "Omar", age: 27, role: "ramen scholar", pic: { s: "c", i: 6 } } ],
           chatName: "\"Chalk Talk\" — 90% climbing beta, 10% ramen rankings.",
@@ -577,9 +579,19 @@ var CREWS = [
           into: "Climbing · Ramen runs · Indie gigs" }
       ];
 
-      var MY_CREW = { id: "mine", name: "The Night Owls", kind: "Pair · Men",
-        members: [ { name: "You", age: 26, role: "the captain", pic: { s: "d", i: 0 } }, { name: "Dre", age: 26, role: "the wingman", pic: { s: "d", i: 1 } } ],
-        vibes: ["Rooftop bars", "Live music", "Late-night food"] };
+      /* Your friend circle: every link is confirmed by both people and carries a label.
+         Duos are generated only from people in each other's circle. */
+      var ME = { name: "You", age: 26, role: "your profile", pic: { s: "d", i: 0 } };
+      var FRIENDS = [
+        { name: "Dre", age: 26, role: "roommate", link: "Roommate", confirmed: true, pic: { s: "d", i: 1 } },
+        { name: "Kai", age: 25, role: "work friend", link: "Coworker", confirmed: true, pic: { s: "d", i: 2 } },
+        { name: "Leo", age: 26, role: "college friend", link: "College roommate", confirmed: true, pic: { s: "d", i: 5 } },
+        { name: "Nate", age: 27, role: "hometown friend", link: "Hometown", confirmed: false, pic: { s: "d", i: 4 } }
+      ];
+      var CIRCLE = { id: "circle", name: "Your circle", members: [ME].concat(FRIENDS) };
+      function friendByName(n) { for (var i = 0; i < FRIENDS.length; i++) if (FRIENDS[i].name === n) return FRIENDS[i]; return FRIENDS[0]; }
+      /* Kept for the in-chat games, which count votes from your side of the date. */
+      var MY_CREW = { id: "mine", name: "Your duo", members: [ME, FRIENDS[0]], vibes: ["Rooftop bars", "Live music", "Late-night food"] };
 
       /* Full individual profiles — bio, interests and human details for every member */
       var PROFILES = {
@@ -595,11 +607,14 @@ var CREWS = [
         "Tess": { bio: "Cocktail scientist. Tess reads a drinks menu like a lab report and has strong, documented feelings about ice. Order her invention once and you'll never go back to the house special.", tags: ["Cocktails", "Speakeasies", "Food science", "Comedy shows"], facts: [["Lives in", "Greenpoint"], ["Does", "Bartending + grad school"], ["Go-to order", "\"Surprise me, but stirred\""], ["Weekend ritual", "Testing one new recipe"], ["Hidden talent", "Free-pours to the millilitre"]] },
         "Jules": { bio: "Route setter and first up the wall. Jules reads a bouldering problem like a puzzle box and will happily spend twenty minutes teaching you the beta until you send it.", tags: ["Bouldering", "Trail runs", "Ramen", "Indie gigs"], facts: [["Lives in", "Long Island City"], ["Does", "Product management"], ["Go-to order", "Spicy miso ramen"], ["Weekend ritual", "Climb first, brunch after"], ["Hidden talent", "Dynos that defy physics"]] },
         "Omar": { bio: "Ramen scholar. Omar maintains the pair's power rankings with academic rigor and has ended friendships (briefly) over tonkotsu. His broth opinions are peer-reviewed by nobody and trusted by all.", tags: ["Ramen rankings", "Cooking", "Climbing", "Food maps"], facts: [["Lives in", "Sunnyside"], ["Does", "Data analysis"], ["Go-to order", "Tonkotsu, extra noodles"], ["Weekend ritual", "One new ramen spot, ranked"], ["Unpopular opinion", "Instant ramen has tiers too"]] },
-        "You": { bio: "One half of The Night Owls — the one who gets the two of you out the door and keeps the night moving. This is your profile as other pairs see it.", tags: ["Rooftop bars", "Live music", "Late-night food"], facts: [["Lives in", "New York"], ["Does", "Keeps this pair functional"], ["Go-to order", "Dealer's choice"], ["Weekend ritual", "Rallying Dre"], ["Signature move", "Actually making the plan happen"]] },
+        "You": { bio: "The one who gets the group out the door and keeps the night moving. This is your profile as other duos see it.", tags: ["Rooftop bars", "Live music", "Late-night food"], facts: [["Lives in", "New York"], ["Does", "Keeps the group chat functional"], ["Go-to order", "Dealer's choice"], ["Weekend ritual", "Rallying the group"], ["Signature move", "Actually making the plan happen"]] },
         "Dre": { bio: "The wingman in the original sense — Dre reads a room in ten seconds and makes introductions feel effortless. Every good story starts with 'so Dre goes…' and improves from there.", tags: ["Introductions", "Live music", "Rooftops", "Dancing"], facts: [["Lives in", "Harlem"], ["Does", "Recruiting"], ["Go-to order", "Paloma"], ["Weekend ritual", "Scouting the next spot"], ["Hidden talent", "Remembers every name in the room"]] },
+        "Kai": { bio: "Quiet until trivia starts, then unstoppable. Kai is the friend who books the table and somehow knows the bartender's name by the second round.", tags: ["Trivia", "Climbing", "Ramen", "Board games"], facts: [["Lives in", "Long Island City"], ["Does", "Software"], ["Go-to order", "Highball"], ["Weekend ritual", "Bouldering, then dumplings"], ["Hidden talent", "Parallel parks on the first try"]] },
+        "Leo": { bio: "College roommate turned permanent plus-one. Leo will talk to anyone about records, and the gallery opening is somehow always his idea.", tags: ["Vinyl", "Galleries", "Natural wine", "Thrifting"], facts: [["Lives in", "Bushwick"], ["Does", "Architecture"], ["Go-to order", "Whatever's orange (the wine)"], ["Weekend ritual", "Record stores on foot"], ["Unpopular opinion", "Side B is better"]] },
+        "Nate": { bio: "Hometown friend who just moved to the city. Says yes to everything, which is the whole point.", tags: ["Sports bars", "BBQs", "Live music"], facts: [["Lives in", "Astoria"], ["Does", "Sales"], ["Go-to order", "Lager"], ["Weekend ritual", "Finding the new spot"]] },
       };
       function profileOf(m) { return PROFILES[m.name] || { bio: m.name + " is " + m.role + " of the pair — first to arrive, last to leave, and always good for the story that gets retold.", tags: ["Good nights out"], facts: [["Role in the pair", m.role]] }; }
-      function findCrew(id) { if (id === "mine") return MY_CREW; return crewById(id); }
+      function findCrew(id) { if (id === "circle") return CIRCLE; if (id === "mine") return MY_CREW; return crewById(id); }
 
       
 var FILTERS = [
@@ -625,7 +640,7 @@ var FILTERS = [
         "we checked with each other (two texts and a screenshot) — approved"
       ];
 
-      var state = { filter: "all", queue: [], seen: 0, current: null, busy: false, matches: [], activeChat: null, superUsed: 0, replyIdx: 0 };
+      var state = { filter: "all", queue: [], seen: 0, current: null, busy: false, matches: [], activeChat: null, replyIdx: 0, ratings: [null, null] };
 
       function crewById(id) { for (var i = 0; i < CREWS.length; i++) if (CREWS[i].id === id) return CREWS[i]; return null; }
 
@@ -666,9 +681,15 @@ function rowsFor(crew, idxs, tagFn) {
 }
 function memberRowsHTML(crew) { return rowsFor(crew, crew.members.map(function (m, i) { return i; }), null); }
 function pairRowsHTML(crew) {
-  var dp = drePickOf(crew);
   return rowsFor(crew, duoOf(crew), function (i) {
-    return i === dp ? '<span class="pick-tag">' + esc(FRIEND.name) + '\'s pick</span>' : '<span class="call-tag">Your call</span>';
+    var r = state.ratings[i];
+    return r == null ? '<span class="call-tag">Not rated</span>' : '<span class="pick-tag">' + RATING_LABEL[r] + "</span>";
+  });
+}
+function circleRowsHTML() {
+  return rowsFor(CIRCLE, CIRCLE.members.map(function (m, i) { return i; }).slice(1), function (i) {
+    var f = CIRCLE.members[i];
+    return f.confirmed ? '<span class="call-tag">' + esc(f.link) + "</span>" : '<span class="pending-tag">Pending</span>';
   });
 }
 
@@ -685,67 +706,81 @@ function globeHTML(m, size, label, cls, ref) {
     '<div class="photo" style="background-image:url(assets/portraits-' + m.pic.s + '.jpg);background-position:' + picPos(m.pic.i) + '"></div><div class="shade"></div>' +
     (label ? '<div class="label">' + label + "</div>" : "") + "</div>";
 }
-/* The pairs algorithm: Dre (your duo partner) likes someone first. That puts
-   their pair in your feed with his pick flagged; your like lands on the other
-   member, and both of your picks then show up on the other pair's feed. */
-var FRIEND = MY_CREW.members[1]; /* Dre — your partner in the duo */
-function duoOf(crew) { return crew.duo || [0, Math.min(1, crew.members.length - 1)]; }
-function drePickOf(crew) { return typeof crew.drePick === "number" ? crew.drePick : duoOf(crew)[1]; }
-function otherIndex(crew) { var d = duoOf(crew); return d[0] === drePickOf(crew) ? d[1] : d[0]; }
+/* Duos are generated from friend circles: the other two are confirmed friends,
+   and you're paired with one of your confirmed friends for this card.
+   Everyone rates both people across privately (2 first choice, 1 open to, 0 no).
+   A match fires only if some one-to-one pairing gives all four people someone
+   they rated first choice or open to; the best such pairing is revealed. */
+var RATING_LABEL = ["No", "Open to", "First choice"];
+function friendOf(crew) { return friendByName(crew.withFriend); }
+function duoOf(crew) { return [0, 1]; }
+function resolvePairing(crew, mine) {
+  if (!crew.sim) return { pending: true };
+  var f = crew.sim.friend, t = crew.sim.them;
+  var options = [
+    { you: 0, friend: 1, r: [mine[0], f[1], t[0][0], t[1][1]] },
+    { you: 1, friend: 0, r: [mine[1], f[0], t[1][0], t[0][1]] }
+  ].filter(function (o) { return o.r.every(function (x) { return x >= 1; }); });
+  if (!options.length) return { match: false };
+  options.sort(function (a, b) { return b.r.reduce(function (x, y) { return x + y; }) - a.r.reduce(function (x, y) { return x + y; }); });
+  return { match: true, you: options[0].you, friend: options[0].friend };
+}
+function ratedBoth() { return state.ratings[0] != null && state.ratings[1] != null; }
+
+function renderRateBox(crew) {
+  $("#rateBox").innerHTML = crew.members.map(function (m, i) {
+    return '<div class="rate-row">' + avatarHTML(m, "") + '<span class="rate-name">' + esc(m.name) + '</span><div class="rate-opts">' +
+      [2, 1, 0].map(function (v) {
+        return '<button type="button" class="rate-opt r' + v + '" data-rate="' + i + ":" + v + '" aria-pressed="' + (state.ratings[i] === v ? "true" : "false") + '">' + RATING_LABEL[v] + "</button>";
+      }).join("") + "</div></div>";
+  }).join("") + '<p class="rate-private">Private. Nobody sees your ratings, including ' + esc(friendOf(crew).name) + ".</p>";
+  $("#btnLike").disabled = !ratedBoth();
+}
+$("#rateBox").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("[data-rate]") : null;
+  if (!b || !state.current) return;
+  var parts = b.getAttribute("data-rate").split(":");
+  state.ratings[parseInt(parts[0], 10)] = parseInt(parts[1], 10);
+  renderExplore();
+  if (REDUCED && window.__placeStatic) window.__placeStatic();
+});
 
 function renderExplore() {
   var crew = state.current;
   var main = $("#exploreMain");
   if (!crew) { main.style.display = "none"; var fn0 = $("#flowNote"); if (fn0) fn0.style.display = "none"; $("#deckEmpty").classList.add("show"); return; }
   main.style.display = ""; $("#deckEmpty").classList.remove("show");
-  soloIdx = Math.min(soloIdx, crew.members.length - 1);
-  if (exploreMode === "pairs") {
-    var oi = otherIndex(crew), pi = drePickOf(crew);
-    var a = crew.members[oi], b = crew.members[pi];
+  var fr = friendOf(crew);
+  var a = crew.members[0], b = crew.members[1];
+  var sub = function (i) { var r = state.ratings[i]; return r == null ? "not rated" : RATING_LABEL[r].toLowerCase(); };
+  /* Only rebuild the globes when the card changes, so rating doesn't reset the photos mid-orbit. */
+  if (bodiesEl.getAttribute("data-crew") !== crew.id) {
+    bodiesEl.setAttribute("data-crew", crew.id);
     bodiesEl.innerHTML =
-      globeHTML(a, 150, esc(a.name) + ", " + a.age + "<small>your call</small>", "g0 lead", crew.id + ":" + oi) +
-      globeHTML(b, 150, esc(b.name) + ", " + b.age + "<small>" + esc(FRIEND.name) + "'s pick</small>", "g1 pick", crew.id + ":" + pi);
-    friendEl.innerHTML = globeHTML(FRIEND, 44, "") + "<span>" + esc(FRIEND.name) + "</span>";
-    friendEl.style.display = "block";
-    satsEl.innerHTML = "";
-  } else {
-    var cur = crew.members[soloIdx];
-    var others = crew.members.filter(function (m, i) { return i !== soloIdx; }).map(function (m) { return m.name; }).join(", ");
-    bodiesEl.innerHTML = globeHTML(cur, 190, esc(cur.name) + ", " + cur.age + "<small>starts " + esc(crew.name) + " for " + esc(FRIEND.name) + "</small>", "g0", crew.id + ":" + soloIdx);
-    friendEl.style.display = "none"; tetherEl.innerHTML = "";
-    satsEl.innerHTML = crew.members.map(function (m, i) {
-      return '<button type="button" class="sat' + (i === soloIdx ? " sel" : "") + '" data-solo="' + i + '" aria-label="Show ' + esc(m.name) + '">' + globeHTML(m, 46, "") + "<span>" + esc(m.name) + "</span></button>";
-    }).join("");
+      globeHTML(a, 150, esc(a.name) + ", " + a.age + '<small class="sub0"></small>', "g0", crew.id + ":0") +
+      globeHTML(b, 150, esc(b.name) + ", " + b.age + '<small class="sub1"></small>', "g1", crew.id + ":1");
   }
+  bodiesEl.querySelector(".sub0").textContent = sub(0);
+  bodiesEl.querySelector(".sub1").textContent = sub(1);
+  friendEl.innerHTML = globeHTML(fr, 44, "") + "<span>You + " + esc(fr.name) + "</span>";
+  friendEl.style.display = "block";
+  satsEl.innerHTML = ""; tetherEl.innerHTML = "";
   var total = state.seen + 1 + state.queue.length;
-  var dpM = crew.members[drePickOf(crew)], ocM = crew.members[otherIndex(crew)];
-  if (exploreMode === "pairs") {
-    $("#crewInfo").innerHTML = "<h1>" + esc(crew.name) + "</h1><p>" + esc(FRIEND.name) + " picked " + esc(dpM.name) + " · your call: " + esc(ocM.name) + " · " + esc(crew.distance) + " · Pair " + (state.seen + 1) + " of " + total + "</p>";
-    $("#exploreHint").textContent = "swipe right to like " + ocM.name + " · left to pass the pair";
-  } else {
-    $("#crewInfo").innerHTML = "<h1>" + esc(crew.name) + "</h1><p>Like " + esc(cur.name) + " first to start this pair for " + esc(FRIEND.name) + " · " + esc(crew.distance) + " · Pair " + (state.seen + 1) + " of " + total + "</p>";
-    $("#exploreHint").textContent = "swipe right to like " + cur.name + " first · left to pass";
-  }
+  $("#crewInfo").innerHTML = "<h1>" + esc(crew.name) + "</h1><p>" + esc(crew.link) + " · your duo: you + " + esc(fr.name) + " · " + esc(crew.distance) + " · Duo " + (state.seen + 1) + " of " + total + "</p>";
+  $("#exploreHint").textContent = ratedBoth() ? "swipe right to send ratings · left to pass the duo" : "rate both, then swipe right to send · left to pass the duo";
+  renderRateBox(crew);
   var supers = crew.superlatives.map(function (s) { return '<div class="super-row"><span>' + esc(s[0]) + '</span><span class="who">' + esc(s[1]) + "</span></div>"; }).join("");
   var fnEl = $("#flowNote");
-  if (fnEl) { fnEl.style.display = ""; fnEl.textContent = exploreMode === "pairs"
-    ? FRIEND.name + " started these pairs — he liked someone first. Like the other one and both picks go to their feed."
-    : "Start a pair: like someone first and their pair lands in " + FRIEND.name + "'s feed, with your pick flagged."; }
-  var startName = crew.members[soloIdx] ? crew.members[soloIdx].name : ocM.name;
-  var pairCard = exploreMode === "pairs"
-    ? '<div class="dcard"><h3>The pair</h3>' + pairRowsHTML(crew) + "</div>" +
-      '<div class="dcard"><h3>How this pair got to you</h3><p class="body">' + esc(FRIEND.name) + " liked " + esc(dpM.name) + " first, so " + esc(crew.name) + " landed in your feed with his pick flagged. Like " + esc(ocM.name) + " and both picks show up on their feed, flagged with who picked whom. When someone on their side picks one of you back, it's a match — one chat opens for the four of you.</p></div>"
-    : '<div class="dcard"><h3>The pair</h3>' + memberRowsHTML(crew) + "</div>" +
-      '<div class="dcard"><h3>Start this pair for ' + esc(FRIEND.name) + '</h3><p class="body">Like ' + esc(startName) + " first and " + esc(crew.name) + " shows up in " + esc(FRIEND.name) + "'s feed with your pick flagged. If " + esc(FRIEND.name) + " likes the other one, both of your picks go to their feed — and one pick back from their side makes the match.</p></div>";
+  if (fnEl) { fnEl.style.display = ""; fnEl.textContent = "Every duo is two friends. You're with " + fr.name + " for this one. Rate both of them; a date only happens if all four ratings line up."; }
   $("#crewDetails").innerHTML =
-    pairCard +
-    '<div class="dcard"><p class="label">Our chat is named</p><p class="chatname">' + esc(crew.chatName) + "</p></div>" +
+    '<div class="dcard"><h3>The duo</h3>' + pairRowsHTML(crew) + "</div>" +
+    '<div class="dcard"><h3>How this duo got to you</h3><p class="body">Wingman built it from friend circles: ' + esc(a.name) + " and " + esc(b.name) + " are confirmed friends (" + esc(crew.link) + "), and so are you and " + esc(fr.name) + " (" + esc(fr.link) + ").</p>" +
+      '<p class="body">Rate both of them. If there\'s a pairing where all four of you get someone you rated first choice or open to, Wingman picks the best one, tells everyone who\'s with whom, and opens one chat. Ratings are never shown to anyone.</p></div>' +
     '<div class="dcard"><h3>Superlatives</h3>' + supers + "</div>" +
     '<div class="dcard"><p class="label">We\'re weirdly competitive about</p><p class="big-line">' + esc(crew.competitive) + "</p></div>" +
     '<div class="dcard"><h3>Looking for</h3><p class="body">' + esc(crew.looking) + '</p><p class="into-line"><b>Into</b>' + esc(crew.into) + "</p></div>" +
-    '<p class="demo-note">These are demo pairs. <button type="button" id="makeYours">Make yours</button> — it takes two minutes.</p>';
+    '<p class="demo-note">These are demo profiles. <button type="button" id="makeYours">Build your circle</button> — it takes two minutes.</p>';
   var mk = $("#makeYours"); if (mk) mk.addEventListener("click", function () { switchView("crew"); });
-  var det = $("#crewDetails"); if (det) det.scrollTop = 0;
 }
 
 /* Frame loop: hover at rest; swipes travel a shallow parabola, lowest at center. */
@@ -760,7 +795,7 @@ function frame(now) {
     if (phase === "idle") theta = Math.sin(t * 0.35) * 0.14;
     tOp += (((phase === "idle" || phase === "enter") && Math.abs(offX) < 2 ? 1 : 0) - tOp) * (tOp > 0.5 && phase === "drag" ? 0.35 : 0.12);
     var g0 = bodiesEl.querySelector(".g0"), g1 = bodiesEl.querySelector(".g1");
-    if (exploreMode === "pairs" && g0 && g1) {
+    if (g0 && g1) {
       var r = 62, crew = state.current;
       var pts = [0, 1].map(function (k) {
         var a2 = theta + (k ? 0 : Math.PI);
@@ -778,9 +813,7 @@ function frame(now) {
       var fx = W2 - 28 - 44 + offX * 0.9, fy = 64 - lift + Math.sin(t * 0.9 + 3.1) * 2;
       friendEl.style.left = fx + "px"; friendEl.style.top = fy + "px";
       friendEl.style.opacity = op; friendEl.style.transform = "scale(" + shrink + ")";
-      var tgt = pts[1];
-      var x1 = fx - 3, y1 = fy + 22, x2 = tgt.x + 36 * tgt.s, y2 = tgt.y - 72 * tgt.s;
-      tetherEl.innerHTML = '<path d="M' + x1 + " " + y1 + " C" + (x1 - 55) + " " + (y1 + 4) + " " + (x2 - 30) + " " + (y2 - (y2 - y1) * 0.55) + " " + x2 + " " + y2 + '" fill="none" stroke="rgba(220,228,255,' + (0.55 * op * tOp).toFixed(3) + ')" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0.1 7"/>';
+      tetherEl.innerHTML = "";
     } else if (g0) {
       var R = 130, a3 = Math.sin(t * 0.4) * 0.1 + theta * 0.4;
       var gx = Math.sin(a3) * R, gy = (1 - Math.cos(a3)) * R * 0.28, gz = Math.cos(a3);
@@ -792,7 +825,7 @@ function frame(now) {
     satsEl.style.opacity = op;
     if (now < noteUntil) { verdictEl.textContent = noteText; verdictEl.style.color = "#ffc2d6"; verdictEl.style.opacity = 1; }
     else if (phase === "drag" || phase === "fling") {
-      verdictEl.textContent = offX > 0 ? (exploreMode === "pairs" && state.current ? "Like " + state.current.members[otherIndex(state.current)].name : "Interested") : "Pass";
+      verdictEl.textContent = offX > 0 ? (ratedBoth() ? "Send ratings" : "Rate both first") : "Pass";
       verdictEl.style.color = offX > 0 ? "#cfe0ff" : "rgba(233,235,245,.6)";
       verdictEl.style.opacity = Math.min(1, Math.abs(offX) / 110) * op;
     } else verdictEl.style.opacity = 0;
@@ -823,7 +856,8 @@ stage.addEventListener("pointermove", function (e) {
 stage.addEventListener("pointerup", function () {
   if (phase !== "drag") return;
   if (Math.abs(dxDrag) < 6) { offX = 0; phase = "idle"; onTap(downGlobe); return; }
-  if (Math.abs(dxDrag) > 100) fling(dxDrag > 0, false);
+  if (Math.abs(dxDrag) > 100 && dxDrag > 0 && !ratedBoth()) { settle(); toast("Rate both of them first. Your ratings stay private."); }
+  else if (Math.abs(dxDrag) > 100) fling(dxDrag > 0, false);
   else settle();
 });
 stage.addEventListener("pointercancel", function () { if (phase === "drag") settle(); });
@@ -835,14 +869,7 @@ function onTap(el) {
   var now = performance.now();
   if (el === lastTap.el && now - lastTap.t < 350) {
     lastTap = { el: null, t: 0 }; clearTimeout(tapTimer);
-    if (exploreMode === "pairs" && el.classList.contains("pick")) {
-      var crew = state.current, picked = crew.members[drePickOf(crew)], other = crew.members[otherIndex(crew)];
-      el.classList.add("pulse");
-      noteText = FRIEND.name + " already picked " + picked.name + " — your call is " + other.name; noteUntil = now + 1100; phase = "note";
-      setTimeout(function () { el.classList.remove("pulse"); if (phase === "note") phase = "idle"; }, 1100);
-    } else if (exploreMode === "pairs" && el.classList.contains("lead")) {
-      decide("like");
-    } else if (el.getAttribute("data-person")) openPerson(el.getAttribute("data-person"));
+    if (el.getAttribute("data-person")) openPerson(el.getAttribute("data-person"));
     return;
   }
   lastTap = { el: el, t: now };
@@ -869,7 +896,7 @@ function fling(like, isSuper) {
   var crew = state.current;
   var finish = function () {
     state.seen++;
-    if (like) onLike(crew, isSuper);
+    if (like) onLike(crew);
     state.busy = false;
     if (!pendingAdvance) { advanceDeck(); enterAnim(like ? 0 : 1); }
   };
@@ -885,34 +912,30 @@ function enterAnim(from) {
 }
 function advanceDeck() {
   state.current = state.queue.shift() || null;
-  soloIdx = 0;
+  state.ratings = [null, null];
   renderExplore();
 }
 function buildDeck() {
   state.queue = filteredCrews();
-  state.seen = 0; state.current = null; soloIdx = 0;
+  state.seen = 0; state.current = null;
   advanceDeck();
 }
 function filteredCrews() { return CREWS.filter(function (c) { return state.filter === "all" || c.cats.indexOf(state.filter) !== -1; }); }
 function decide(action) {
   if (!state.current || state.busy || phase === "fling") return;
-  if (action === "super") {
-    if (state.superUsed >= 3) { toast("Out of super likes for tonight."); return; }
-    state.superUsed++; fling(true, true);
-  } else fling(action === "like", false);
+  if (action === "like" && !ratedBoth()) { toast("Rate both of them first. Your ratings stay private."); return; }
+  fling(action === "like", false);
 }
-function onLike(crew, isSuper) {
+function onLike(crew) {
   var existing = state.matches.some(function (m) { return m.crew.id === crew.id; });
-  var picked = crew.members[drePickOf(crew)], other = crew.members[otherIndex(crew)];
-  if (crew.instantMatch && !existing && exploreMode === "pairs") { addMatch(crew, true); pendingAdvance = true; showMatch(crew); }
-  else if (existing) toast("You already matched with " + crew.name + " — the chat's waiting in Matches.");
-  else if (exploreMode === "solo") toast("First pick sent — you liked " + crew.members[soloIdx].name + " first, so " + crew.name + " lands in " + FRIEND.name + "'s feed with your pick flagged. His like on the other one sends both picks to their feed.");
-  else if (isSuper) toast("Super pick sent — " + picked.name + " & " + other.name + " see your duo first, with " + FRIEND.name + "'s pick of " + picked.name + " and your pick of " + other.name + " flagged.");
-  else toast("Sent to their feed — they can see " + FRIEND.name + " picked " + picked.name + " and you picked " + other.name + ". One pick back from their side and it's a match.");
+  if (existing) { toast("You already matched with " + crew.name + ". The chat's waiting in Matches."); return; }
+  var res = resolvePairing(crew, state.ratings.slice());
+  if (res.pending) toast("Ratings saved privately. You'll hear back once all four of you have rated.");
+  else if (!res.match) toast("Ratings saved. No pairing worked for all four this time, and nobody will ever see who rated what.");
+  else { crew.pairing = res; addMatch(crew, true); pendingAdvance = true; showMatch(crew); }
 }
 $("#btnPass").addEventListener("click", function () { decide("pass"); });
 $("#btnLike").addEventListener("click", function () { decide("like"); });
-$("#btnSuper").addEventListener("click", function () { decide("super"); });
 $("#rescanBtn").addEventListener("click", function () { buildDeck(); enterAnim(0); });
 document.addEventListener("keydown", function (e) {
   if (!$("#view-explore").classList.contains("active")) return;
@@ -920,14 +943,6 @@ document.addEventListener("keydown", function (e) {
   if (phase !== "idle") return;
   if (e.key === "ArrowRight") decide("like");
   if (e.key === "ArrowLeft") decide("pass");
-});
-document.querySelectorAll("#modeSwitch button").forEach(function (b) {
-  b.addEventListener("click", function () {
-    if (phase !== "idle" || b.dataset.mode === exploreMode) return;
-    exploreMode = b.dataset.mode;
-    document.querySelectorAll("#modeSwitch button").forEach(function (x) { x.classList.toggle("on", x === b); });
-    renderExplore(); enterAnim(0);
-  });
 });
 /* Filters */
 var filtersEl = $("#filters");
@@ -949,7 +964,7 @@ FILTERS.forEach(function (f) {
         var g = crewById("sundayleague");
         state.matches.push({ crew: g, unread: 1, isNew: false, time: "Tue", score: { me: 0, them: 0 },
           messages: [
-            { cls: "system", text: "Matched pair — Dre picked Sam, you picked Theo, and Sam picked Dre back. All four picks lined up." },
+            { cls: "system", text: "It's a match. All four ratings lined up. For the date: you're with Theo, Dre's with Sam." },
             { cls: "them", name: "Theo · " + g.name, text: "your pair's trivia record is either legendary or a war crime, we're still deciding" },
             { cls: "me", name: "Your pair", text: "both. it's both. when are we settling this on the lake" },
             { cls: "them", name: "Sam · " + g.name, text: "saturday. we bring the boat, you bring the playlist — and it better not miss" }
@@ -959,8 +974,8 @@ FILTERS.forEach(function (f) {
       function addMatch(crew, isNew) {
         var m = { crew: crew, unread: 0, isNew: !!isNew, time: "Now", score: { me: 0, them: 0 },
           messages: [
-            { cls: "system", text: "It's a match — " + FRIEND.name + " picked " + crew.members[drePickOf(crew)].name + ", you picked " + crew.members[otherIndex(crew)].name + ", and " + (crew.theirPick ? crew.theirPick.by + " picked " + crew.theirPick.of : "they picked back") + ". All four picks lined up." },
-            { cls: "them", name: crew.members[otherIndex(crew)].name + " · " + crew.name, text: "ok so the picks actually lined up?? hi. all four of us, one chat — let's plan something" }
+            { cls: "system", text: "It's a match. All four ratings lined up. For the date: you're with " + crew.members[crew.pairing.you].name + ", " + friendOf(crew).name + "'s with " + crew.members[crew.pairing.friend].name + "." },
+            { cls: "them", name: crew.members[crew.pairing.you].name + " · " + crew.name, text: "ok it actually worked?? hi. all four of us, one chat. let's plan something" }
           ] };
         state.matches.unshift(m); state.activeChat = m;
         renderMatches(); updateBadge();
@@ -973,7 +988,7 @@ FILTERS.forEach(function (f) {
       }
       function renderMatches() {
         var list = $("#matchList"); list.innerHTML = "";
-        if (!state.matches.length) { list.innerHTML = '<div class="empty-note">No matches yet.<br/>Start a pair, or finish one Dre started — matches land here.</div>'; return; }
+        if (!state.matches.length) { list.innerHTML = '<div class="empty-note">No matches yet.<br/>Rate the duos in Explore. Matches land here.</div>'; return; }
         state.matches.forEach(function (m) {
           var b = document.createElement("button");
           b.className = "match-item" + (state.activeChat === m ? " selected" : "");
@@ -1004,7 +1019,7 @@ FILTERS.forEach(function (f) {
           if (gamesOpen) $("#gamesDrawer").hidden = false;
         }
         $("#chatName").textContent = m.crew.name;
-        $("#chatSub").textContent = "Your pair + their pair · " + m.crew.match + "% match";
+        $("#chatSub").textContent = "You + " + friendOf(m.crew).name + " · " + m.crew.name;
         var body = $("#chatBody"); body.innerHTML = "";
         m.messages.forEach(function (msg) {
           var d = document.createElement("div");
@@ -1352,18 +1367,17 @@ function openPerson(ref) {
   var pairOthers = crew.members.filter(function (o, oi) { return oi !== idx; });
   var partnerName = pairOthers.length ? pairOthers[0].name : "";
   var pickNote;
-  if (crew.id === "mine") pickNote = m.name === "You" ? "You're one half of this pair. Your first likes start pairs for Dre — and his first likes start pairs for you." : "Dre is your other half. His first likes land in your feed with his pick flagged; your first likes land in his.";
-  else if (idx === drePickOf(crew)) pickNote = FRIEND.name + " picked " + m.name + " first — that's why this pair is in your feed. " + partnerName + " is your call: like them and both picks go to their feed.";
-  else pickNote = m.name + " is your call — " + FRIEND.name + " picked " + partnerName + " first. Like " + m.name + " and both picks show up on their feed, flagged with who picked whom.";
-  var pickCard = '<div class="person-sec"><h3>In the pair flow</h3><p class="bio">' + esc(pickNote) + "</p></div>";
+  if (crew.id === "circle") pickNote = m.name === "You" ? "Your profile. Wingman pairs you with friends from your circle; there's no fixed partner." : (m.confirmed ? m.name + " is in your circle (" + m.link + "). You've both confirmed, so Wingman can put you two in a duo." : m.name + " hasn't confirmed yet. Until both of you confirm, Wingman won't pair you together.");
+  else pickNote = "You rate " + m.name + " privately: first choice, open to, or no. Nobody else sees it, including " + friendOf(crew).name + ".";
+  var pickCard = '<div class="person-sec"><h3>How it works</h3><p class="bio">' + esc(pickNote) + "</p></div>";
   $("#personBody").innerHTML =
     '<div class="person-top"><span class="person-portrait" role="img" aria-label="' + esc(m.name) + '" style="background-image:url(assets/portraits-' + m.pic.s + '.jpg); background-position:' + picPos(m.pic.i) + '"></span>' +
-    '<div class="person-id"><h2 id="personName">' + esc(m.name) + ", " + m.age + '</h2><p class="p-role">' + esc(m.role) + '</p><p class="p-group">One half of ' + esc(crew.name) + (crew.distance ? " · " + esc(crew.distance) : "") + "</p></div></div>" +
+    '<div class="person-id"><h2 id="personName">' + esc(m.name) + ", " + m.age + '</h2><p class="p-role">' + esc(m.role) + '</p><p class="p-group">' + (crew.id === "circle" ? "In your circle" : "In a duo with " + esc(partnerName) + " · " + esc(crew.link)) + (crew.distance ? " · " + esc(crew.distance) : "") + "</p></div></div>" +
     '<div class="person-sec"><h3>About</h3><p class="bio">' + esc(p.bio) + "</p></div>" +
     '<div class="person-sec"><h3>Into</h3><div class="person-tags">' + tags + "</div></div>" +
     '<div class="person-sec"><h3>Details</h3><div class="fact-list">' + facts + "</div></div>" +
     pickCard +
-    (others ? '<div class="person-sec"><h3>The other half of ' + esc(crew.name) + '</h3><div class="person-others">' + others + "</div></div>" : "");
+    (others ? '<div class="person-sec"><h3>' + (crew.id === "circle" ? "Your circle" : "Their duo") + '</h3><div class="person-others">' + others + "</div></div>" : "");
   var ov = $("#personOverlay");
   ov.classList.add("show");
   ov.querySelector(".person-sheet").scrollTop = 0;
@@ -1383,9 +1397,8 @@ document.addEventListener("keydown", function (e) { if (e.key === "Escape") { cl
 
 /* ================= Match overlay: two asteroids collide and form a heart ================= */
 function showMatch(crew) {
-  var picked = crew.members[drePickOf(crew)], other = crew.members[otherIndex(crew)];
-  var tp = crew.theirPick || { by: picked.name, of: FRIEND.name };
-  $("#matchText").innerHTML = esc(tp.by) + " picked " + esc(tp.of) + " back.<br>Your duo picked " + esc(picked.name) + " &amp; " + esc(other.name) + " — all four picks line up.";
+  var pr = crew.pairing;
+  $("#matchText").innerHTML = "All four ratings lined up.<br>You're with " + esc(crew.members[pr.you].name) + ", " + esc(friendOf(crew).name) + "'s with " + esc(crew.members[pr.friend].name) + ".";
   var sp = $("#sparks"); sp.innerHTML = "";
   if (!REDUCED) {
     for (var i = 0; i < 16; i++) {
@@ -1443,14 +1456,11 @@ $("#matchChatBtn").addEventListener("click", function () {
       
 
 /* ================= Your duo ================= */
-      $("#myMembers").innerHTML = "<h3>The two of you</h3>" + memberRowsHTML(MY_CREW);
-      $("#myFaces").innerHTML = facesHTML({ id: "mine", members: [MY_CREW.members[0], MY_CREW.members[1]] });
-      var groupNameInput = $("#groupName");
-      groupNameInput.addEventListener("input", function () {
-        var v = groupNameInput.value.trim();
-        MY_CREW.name = v || "Unnamed pair";
-        $("#myNameBig").textContent = MY_CREW.name;
-      });
+      var confirmedCount = FRIENDS.filter(function (f) { return f.confirmed; }).length;
+      $("#myMembers").innerHTML = "<h3>Friends</h3>" + circleRowsHTML() + '<button type="button" class="btn-ghost" id="addFriendBtn" style="margin-top:12px">Add a friend</button>';
+      $("#myFaces").innerHTML = facesHTML({ id: "circle", members: [ME] });
+      $("#circleMeta").textContent = "You + " + confirmedCount + " confirmed friends · " + (FRIENDS.length - confirmedCount) + " pending";
+      $("#addFriendBtn").addEventListener("click", function () { toast("Invites aren't wired up in this demo. Both people have to confirm before a friend counts."); });
       var statusSwitch = $("#statusSwitch");
       statusSwitch.addEventListener("click", function () {
         var on = statusSwitch.getAttribute("aria-checked") === "true";
@@ -1458,7 +1468,7 @@ $("#matchChatBtn").addEventListener("click", function () {
         var pill = $("#statusPill");
         pill.textContent = !on ? "Out tonight" : "Staying in";
         pill.classList.toggle("live", !on);
-        toast(!on ? "You're out — your pair is visible to pairs nearby." : "Staying in. You won't show up in other pairs' feeds.");
+        toast(!on ? "You're out. You can show up in duos with your friends." : "Staying in. You won't show up in any duos.");
       });
       var radiusRange = $("#radiusRange");
       radiusRange.addEventListener("input", function () {
@@ -1481,7 +1491,7 @@ $("#matchChatBtn").addEventListener("click", function () {
             else { toast("Five max — keep it focused."); return; }
             var pct = 62 + myVibes.length * 4 + (myVibes.length >= 4 ? 8 : 0);
             $("#syncBar").style.width = Math.min(pct, 98) + "%";
-            $("#syncNote").textContent = Math.min(pct, 98) + "% — " + (myVibes.length >= 5 ? "fully loaded. This pair looks great." : "add a pair anthem to climb higher.");
+            $("#syncNote").textContent = Math.min(pct, 98) + "% — " + (myVibes.length >= 5 ? "fully loaded. Your profile looks great." : "add another photo to climb higher.");
             renderTags();
           });
           tagPicker.appendChild(b);
@@ -1530,6 +1540,9 @@ $("#signInBtn").addEventListener("click", function () { toast("Sign-in isn't wir
 })();
 
 /* ================= Init ================= */
+/* Duos are generated, not named teams: show them by their two names. */
+CREWS.forEach(function (c) { c.team = c.name; c.name = c.members[0].name + " & " + c.members[1].name; });
+crewById("sundayleague").pairing = { you: 0, friend: 1 };
 seedMatches();
 buildDeck();
 renderMatches();
